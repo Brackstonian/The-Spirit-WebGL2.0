@@ -9,8 +9,28 @@
 This experiment is also inspired by [David Li](http://david.li/)'s [Flow](http://david.li/flow/) experiment.
 
 ## Development and deployment
-- dev: `node dev`
+- dev: `node dev` 
 - deploy: `node build`
+
+## Usage
+**Vue Example:**
+```vue
+<template>
+  <div ref="container"></div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import spiritWebgl from 'the-spirit-webgl2'
+const container = ref(null)
+
+onMounted(() => {
+  if (container.value) {
+    spiritWebgl.init(container.value)
+  }
+})
+</script>
+```
 
 ## License
 This experiment is under MIT License.

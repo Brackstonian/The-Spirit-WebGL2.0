@@ -1,9 +1,9 @@
 {
   "name": "the-spirit-webgl2",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "private": true,
   "description": "",
-  "main": "index.js",
+  "main": "app/js/index.js",
   "dependencies": {
     "computed-style": "0.3.0",
     "dat-gui": "0.5.0",

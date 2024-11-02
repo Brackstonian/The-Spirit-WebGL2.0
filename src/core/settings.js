@@ -27,7 +27,7 @@ exports.simulatorTextureHeight = amountInfo[1];
 
 exports.useTriangleParticles = true;
 // exports.followMouse = !exports.isMobile;
-exports.followMouse = false;
+exports.followMouse = true;
 
 exports.speed = 1;
 exports.dieSpeed = 0.015;

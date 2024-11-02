@@ -13,6 +13,7 @@ function runBuild(f) {
     console.log('Bundling', f);
     var b = browserify('src/' + f, {
       debug: false,
+      standalone: 'spiritWebgl'
     });
     b.plugin(require('bundle-collapser/plugin'));
     var transforms = [['glslify', { global: true }]];
@@ -28,7 +29,7 @@ function runBuild(f) {
       });
       if (result.error) return reject(result.error);
       console.log('Writing', f);
-      fs.mkdir('app/js', { recursive: true }, function(err) {
+      fs.mkdir('app/js', { recursive: true }, function (err) {
         if (err) return reject(err);
         fs.writeFile('app/js/' + f, result.code, function (err) {
           if (err) return reject(err);

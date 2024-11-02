@@ -44,8 +44,7 @@ var _logo;
 var _instruction;
 var _footerItems;
 
-function init() {
-
+function init(container) {
     if (settings.useStats) {
         _stats = new Stats();
         css(_stats.domElement, {
@@ -70,7 +69,8 @@ function init() {
     _renderer.setClearColor(settings.bgColor);
     _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     _renderer.shadowMap.enabled = true;
-    document.currentScript.parentElement.appendChild(_renderer.domElement);
+    // document.currentScript.parentElement.appendChild(_renderer.domElement);
+    container.appendChild(_renderer.domElement);
     css(_renderer.domElement.parentElement,
         {
             overflow: 'hidden'
@@ -221,7 +221,7 @@ function _onResize() {
 
 function _loop() {
     var newTime = Date.now();
-    raf(_loop);
+    raf(_loop); // `raf` should continuously call `_loop`
     if (settings.useStats) _stats.begin();
     _render(newTime - _time, newTime);
     if (settings.useStats) _stats.end();
@@ -286,4 +286,14 @@ function _render(dt, newTime) {
 
 }
 
-mobile.pass(init);
+
+
+module.exports = {
+    init,
+    updateSettings: function (newSettings) {
+        // Core simulation settings
+        settings.speed = newSettings.speed;
+        settings.dieSpeed = newSettings.dieSpeed;
+        settings.bgColor = newSettings.bgColor;
+    }
+};
