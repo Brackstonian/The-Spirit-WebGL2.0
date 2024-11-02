@@ -1,4 +1,3 @@
-global.Promise = require('pinkie-promise');
 const browserify = require('browserify');
 const fs = require('fs');
 const UglifyJS = require('uglify-js');
@@ -9,14 +8,12 @@ Promise.all(['index.js'].map(runBuild)).catch(function (err) {
   console.log("Finished");
 });
 
-function runBuild (f) {
+function runBuild(f) {
   return new Promise(function (resolve, reject) {
     console.log('Bundling', f);
     var b = browserify('src/' + f, {
       debug: false,
-      // noparse: [ 'three' ]
     });
-    // b.transform(require('babelify').configure({ presets: 'es2015' }));
     b.plugin(require('bundle-collapser/plugin'));
     var transforms = [['glslify', { global: true }]];
     transforms.forEach(function (t) {
@@ -25,11 +22,18 @@ function runBuild (f) {
     b.bundle(function (err, src) {
       if (err) return reject(err);
       console.log('Compressing', f);
-      var result = UglifyJS.minify(src.toString(), { fromString: true });
+      var result = UglifyJS.minify(src.toString(), {
+        compress: true,
+        mangle: true
+      });
+      if (result.error) return reject(result.error);
       console.log('Writing', f);
-      fs.writeFile('app/js/' + f, result.code, function (err) {
+      fs.mkdir('app/js', { recursive: true }, function(err) {
         if (err) return reject(err);
-        resolve();
+        fs.writeFile('app/js/' + f, result.code, function (err) {
+          if (err) return reject(err);
+          resolve();
+        });
       });
     });
   });

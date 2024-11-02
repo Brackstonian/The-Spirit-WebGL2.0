@@ -17,11 +17,17 @@ budo(entryPath, {
     },
     browserify: {
         transform: [
-            [ 'installify', { save: true } ],
+            ['installify', { save: true }],
             ['glslify', { global: true }]
-        ]
+        ],
+        debug: true,
+        insertGlobalVars: {
+            THREE: function () {
+                return 'require("three")';
+            }
+        }
     }
-}).on('connect', function(ev) {
+}).on('connect', function (ev) {
     const uri = ev.uri + 'index.html';
     opn(uri);
 });
