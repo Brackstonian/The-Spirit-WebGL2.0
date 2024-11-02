@@ -5,7 +5,6 @@ var raf = require('raf');
 
 var THREE = require('three');
 
-var OrbitControls = require('./controls/OrbitControls');
 var settings = require('./core/settings');
 
 var math = require('./utils/math');
@@ -31,7 +30,6 @@ var _stats;
 var _width = 0;
 var _height = 0;
 
-var _control;
 var _camera;
 var _scene;
 var _renderer;
@@ -48,41 +46,43 @@ var _footerItems;
 
 function init() {
 
-    if(settings.useStats) {
+    if (settings.useStats) {
         _stats = new Stats();
         css(_stats.domElement, {
-            position : 'absolute',
-            left : '0px',
-            top : '0px',
-            zIndex : 2048
+            position: 'absolute',
+            left: '0px',
+            top: '0px',
+            zIndex: 2048
         });
 
-        document.body.appendChild( _stats.domElement );
+        document.body.appendChild(_stats.domElement);
     }
 
     _bgColor = new THREE.Color(settings.bgColor);
-    settings.mouse = new THREE.Vector2(0,0);
+    settings.mouse = new THREE.Vector2(0, 0);
     settings.mouse3d = _ray.origin;
 
     _renderer = new THREE.WebGLRenderer({
         // transparent : true,
         // premultipliedAlpha : false,
-        antialias : !settings.isMobile
+        antialias: !settings.isMobile
     });
     _renderer.setClearColor(settings.bgColor);
     _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     _renderer.shadowMap.enabled = true;
     document.currentScript.parentElement.appendChild(_renderer.domElement);
-	css(_renderer.domElement.parentElement,
-	{
-		overflow: 'hidden'
-	});
-	
-    _scene = new THREE.Scene();
-    _scene.fog = new THREE.FogExp2( settings.bgColor, 0.001 );
+    css(_renderer.domElement.parentElement,
+        {
+            overflow: 'hidden'
+        });
 
-    _camera = new THREE.PerspectiveCamera( 45, 1, 10, 3000);
-    _camera.position.set(300, 60, 300).normalize().multiplyScalar(1000);
+    _scene = new THREE.Scene();
+    _scene.fog = new THREE.FogExp2(settings.bgColor, 0.001);
+
+    _camera = new THREE.PerspectiveCamera(45, 1, 10, 3000);
+    // _camera.position.set(300, 60, 300).normalize().multiplyScalar(1000);
+    _camera.position.set(319.0, 45.0, 319.0).normalize().multiplyScalar(500);
+    _camera.lookAt(0, 0, 0);
     settings.camera = _camera;
     settings.cameraPosition = _camera.position;
 
@@ -96,34 +96,27 @@ function init() {
     lights.init(_renderer);
     _scene.add(lights.mesh);
 
-	_scene.add( new THREE.PointLightHelper(lights.pointLight ) );
+    _scene.add(new THREE.PointLightHelper(lights.pointLight));
 
     floor.init(_renderer);
     floor.mesh.position.y = -100;
     _scene.add(floor.mesh);
 
-    _control = new OrbitControls( _camera, _renderer.domElement );
-    _control.target.y = 50;
-    _control.maxDistance = 1000;
-    _control.minPolarAngle = 0.3;
-    _control.maxPolarAngle = Math.PI / 2 - 0.1;
-    _control.noPan = true;
-    _control.update();
 
 
     // _gui = new dat.GUI();
 
     // if(settings.isMobile) {
-        // _gui.close();
-        // _control.enabled = false;
+    // _gui.close();
+    // _control.enabled = false;
     // }
 
     // var simulatorGui = _gui.addFolder('Simulator');
     // simulatorGui.add(settings.query, 'amount', settings.amountList).onChange(function(){
-        // if (confirm('It will restart the demo')) {
-            // window.location.href = window.location.href.split('#')[0] + encode(settings.query).replace('?', '#');
-            // window.location.reload();
-        // }
+    // if (confirm('It will restart the demo')) {
+    // window.location.href = window.location.href.split('#')[0] + encode(settings.query).replace('?', '#');
+    // window.location.reload();
+    // }
     // });
     // simulatorGui.add(settings, 'speed', 0, 3).listen();
     // simulatorGui.add(settings, 'dieSpeed', 0.0005, 0.05).listen();
@@ -151,8 +144,8 @@ function init() {
     // var motionMaxDistance = postprocessingGui.add(motionBlur, 'maxDistance', 1, 300).name('motion distance').listen();
     // var motionMultiplier = postprocessingGui.add(motionBlur, 'motionMultiplier', 0.1, 15).name('motion multiplier').listen();
     // var motionQuality = postprocessingGui.add(settings.query, 'motionBlurQuality', settings.motionBlurQualityList).name('motion quality').onChange(function(val){
-        // motionBlur.linesRenderTargetScale = settings.motionBlurQualityMap[val];
-        // motionBlur.resize();
+    // motionBlur.linesRenderTargetScale = settings.motionBlurQualityMap[val];
+    // motionBlur.resize();
     // });
     // var controlList = [motionMaxDistance, motionMultiplier, motionQuality];
     // motionBlurControl.onChange(enableGuiControl.bind(this, controlList));
@@ -167,19 +160,19 @@ function init() {
     // postprocessingGui.open();
 
     // function enableGuiControl(controls, flag) {
-        // controls = controls.length ? controls : [controls];
-        // var control;
-        // for(var i = 0, len = controls.length; i < len; i++) {
-            // control = controls[i];
-            // control.__li.style.pointerEvents = flag ? 'auto' : 'none';
-            // control.domElement.parentNode.style.opacity = flag ? 1 : 0.1;
-        // }
+    // controls = controls.length ? controls : [controls];
+    // var control;
+    // for(var i = 0, len = controls.length; i < len; i++) {
+    // control = controls[i];
+    // control.__li.style.pointerEvents = flag ? 'auto' : 'none';
+    // control.domElement.parentNode.style.opacity = flag ? 1 : 0.1;
+    // }
     // }
 
     // var preventDefault = function(evt){evt.preventDefault();this.blur();};
     // Array.prototype.forEach.call(_gui.domElement.querySelectorAll('input[type="checkbox"],select'), function(elem){
-        // elem.onkeyup = elem.onkeydown = preventDefault;
-        // elem.style.color = '#000';
+    // elem.onkeyup = elem.onkeydown = preventDefault;
+    // elem.style.color = '#000';
     // }); 
 
     //_logo = document.querySelector('.logo');
@@ -199,7 +192,7 @@ function init() {
 }
 
 function _onKeyUp(evt) {
-    if(evt.keyCode === 32) {
+    if (evt.keyCode === 32) {
         settings.speed = settings.speed === 0 ? 1 : 0;
         settings.dieSpeed = settings.dieSpeed === 0 ? 0.015 : 0;
     }
@@ -207,7 +200,7 @@ function _onKeyUp(evt) {
 
 function _bindTouch(func) {
     return function (evt) {
-        if(settings.isMobile && evt.preventDefault) {
+        if (settings.isMobile && evt.preventDefault) {
             evt.preventDefault();
         }
         func(evt.changedTouches[0]);
@@ -221,7 +214,7 @@ function _onMove(evt) {
 
 function _onResize() {
     _width = window.innerWidth;
-	_height = window.innerHeight;
+    _height = window.innerHeight;
 
     postprocessing.resize(_width, _height);
 }
@@ -229,9 +222,9 @@ function _onResize() {
 function _loop() {
     var newTime = Date.now();
     raf(_loop);
-    if(settings.useStats) _stats.begin();
+    if (settings.useStats) _stats.begin();
     _render(newTime - _time, newTime);
-    if(settings.useStats) _stats.end();
+    if (settings.useStats) _stats.end();
     _time = newTime;
 }
 
@@ -244,44 +237,42 @@ function _render(dt, newTime) {
     _bgColor.setStyle(settings.bgColor);
     var tmpColor = floor.mesh.material.color;
     //tmpColor.lerp(_bgColor, 0.05);
-	tmpColor = _bgColor;
+    tmpColor = _bgColor;
     _scene.fog.color.copy(tmpColor);
     _renderer.setClearColor(tmpColor.getHex());
 
     _initAnimation = Math.min(_initAnimation + dt * 0.00025, 1);
     simulator.initAnimation = _initAnimation;
 
-    _control.maxDistance = _initAnimation === 1 ? 1000 : math.lerp(1000, 450, ease.easeOutCubic(_initAnimation));
-    _control.update();
     lights.update(dt, _camera);
 
     // update mouse3d
     _camera.updateMatrixWorld();
-    _ray.origin.setFromMatrixPosition( _camera.matrixWorld );
-    _ray.direction.set( settings.mouse.x, settings.mouse.y, 0.5 ).unproject( _camera ).sub( _ray.origin ).normalize();
+    _ray.origin.setFromMatrixPosition(_camera.matrixWorld);
+    _ray.direction.set(settings.mouse.x, settings.mouse.y, 0.5).unproject(_camera).sub(_ray.origin).normalize();
     var distance = _ray.origin.length() / Math.cos(Math.PI - _ray.direction.angleTo(_ray.origin));
-    _ray.origin.add( _ray.direction.multiplyScalar(distance * 1.0));
+    _ray.origin.add(_ray.direction.multiplyScalar(distance * 1.0));
     simulator.update(dt);
     particles.update(dt);
 
     ratio = Math.min((1 - Math.abs(_initAnimation - 0.5) * 2) * 1.2, 1);
     var blur = (1 - ratio) * 10;
     //_logo.style.display = ratio ? 'block' : 'none';
-    if(ratio) {
+    if (ratio) {
         //_logo.style.opacity = ratio;
         //_logo.style.webkitFilter = 'blur(' + blur + 'px)';
         ratio = (0.8 + Math.pow(_initAnimation, 1.5) * 0.5);
-        if(_width < 580) ratio *= 0.5;
+        if (_width < 580) ratio *= 0.5;
         //_logo.style.transform = 'scale3d(' + ratio + ',' + ratio + ',1)';
     }
 
     //for(var i = 0, len = _footerItems.length; i < len; i++) {
-        //ratio = math.unLerp(0.5 + i * 0.01, 0.6 + i * 0.01, _initAnimation);
-        //_footerItems[i].style.transform = 'translate3d(0,' + ((1 - Math.pow(ratio, 3)) * 50) + 'px,0)';
+    //ratio = math.unLerp(0.5 + i * 0.01, 0.6 + i * 0.01, _initAnimation);
+    //_footerItems[i].style.transform = 'translate3d(0,' + ((1 - Math.pow(ratio, 3)) * 50) + 'px,0)';
     //}
 
     ratio = math.unLerp(0.5, 0.6, _initAnimation);
-    if(!settings.isMobile) {
+    if (!settings.isMobile) {
         //_instruction.style.display = ratio ? 'block' : 'none';
         //_instruction.style.transform = 'translate3d(0,' + ((1 - ratio * ratio) * 50) + 'px,0)';
     }
