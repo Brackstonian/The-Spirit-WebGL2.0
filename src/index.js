@@ -209,14 +209,21 @@ function _render(dt, newTime) {
 
 module.exports = {
     init,
-    updateSettings: function (newSettings) {
+    updateSettings: function (newSettings, cameraSettings) {
         settings.speed = newSettings.speed;
         settings.dieSpeed = newSettings.dieSpeed;
         settings.bgColor = newSettings.bgColor;
         settings.followMouse = newSettings.followMouse;
         settings.showFloor = newSettings.showFloor;
-    },
-    updateCameraSettings: function (cameraSettings) {
+        settings.attraction = newSettings.attraction;
+        settings.color1 = newSettings.color1;
+        settings.color2 = newSettings.color2;
+        settings.curlSize = newSettings.curlSize;
+        settings.radius = newSettings.radius;
+        settings.shadowDarkness = newSettings.shadowDarkness;
+        settings.simulatorTextureWidth = newSettings.simulatorTextureWidth;
+        settings.simulatorTextureHeight = newSettings.simulatorTextureHeight;
+        settings.useStats = newSettings.useStats;
         if (cameraSettings.transition !== undefined) {
             _cameraLerpFactor = 1 - Math.pow(0.1, 1 / (cameraSettings.transition * 60));
         }
