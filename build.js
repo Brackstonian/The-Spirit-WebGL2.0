@@ -1,12 +1,18 @@
 const browserify = require('browserify');
 const fs = require('fs');
 const UglifyJS = require('uglify-js');
+const chokidar = require('chokidar');
 
-Promise.all(['index.js'].map(runBuild)).catch(function (err) {
-  console.error(err);
-}).then(function () {
-  console.log("Finished");
-});
+function build() {
+  console.log('\nStarting build...');
+  Promise.all(['index.js'].map(runBuild))
+    .catch(function (err) {
+      console.error(err);
+    })
+    .then(function () {
+      console.log("Finished");
+    });
+}
 
 function runBuild(f) {
   return new Promise(function (resolve, reject) {
@@ -38,4 +44,38 @@ function runBuild(f) {
       });
     });
   });
+}
+
+const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
+
+if (isWatch) {
+  console.log('Watching for changes...');
+
+  const watcher = chokidar.watch('src/**/*', {
+    ignored: /(^|[\/\\])\../,
+    persistent: true
+  });
+
+  watcher
+    .on('ready', () => {
+      console.log('Initial scan complete. Ready for changes.');
+      build(); // Initial build
+    })
+    .on('change', path => {
+      console.log(`File ${path} has been changed`);
+      build();
+    })
+    .on('add', path => {
+      console.log(`File ${path} has been added`);
+      build();
+    })
+    .on('unlink', path => {
+      console.log(`File ${path} has been removed`);
+      build();
+    })
+    .on('error', error => {
+      console.error('Error happened', error);
+    });
+} else {
+  build();
 }
