@@ -236,5 +236,8 @@ module.exports = {
                 cameraSettings.z
             );
         }
+        if (newSettings.pattern) {
+            simulator.setPattern(newSettings.pattern);
+        }
     }
 };
