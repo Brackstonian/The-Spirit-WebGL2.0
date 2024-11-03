@@ -36,7 +36,7 @@ exports.dieSpeed = 0.015;
 exports.radius = amountInfo[2] * 1.3;
 exports.curlSize = 0.02;
 exports.attraction = 1;
-exports.shadowDarkness = 1.00;
+exports.shadowDarkness = 0.01;
 
 exports.bgColor = '#1A374D';  // Deep blue-grey
 exports.color1 = '#6998AB';  // Medium blue

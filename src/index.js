@@ -66,11 +66,11 @@ function init(container) {
     settings.mouse3d = _ray.origin;
 
     _renderer = new THREE.WebGLRenderer({
-        antialias: !settings.isMobile
+        antialias: true
     });
     _renderer.setClearColor(settings.bgColor);
-    _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     _renderer.shadowMap.enabled = true;
+    _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(_renderer.domElement);
     css(_renderer.domElement.parentElement,
         {
