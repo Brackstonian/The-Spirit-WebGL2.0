@@ -52,6 +52,11 @@ const patterns = {
         y: time * 10 % h,
         z: Math.sin(time) * r * (1 - time * 0.1 % 1)
     }),
+    still: (time, r, h) => ({
+        x: r * 0.5,
+        y: 0,
+        z: r * 0.5
+    })
 };
 
 var currentPattern = 'default';
