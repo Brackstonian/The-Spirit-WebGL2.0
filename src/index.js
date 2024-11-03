@@ -177,6 +177,10 @@ function _render(dt, newTime) {
 
     lights.update(dt, _camera);
 
+
+    // Floor visibility
+    floor.mesh.visible = settings.showFloor;
+
     // update mouse3d
     _camera.updateMatrixWorld();
     _ray.origin.setFromMatrixPosition(_camera.matrixWorld);
@@ -210,14 +214,12 @@ module.exports = {
         settings.dieSpeed = newSettings.dieSpeed;
         settings.bgColor = newSettings.bgColor;
         settings.followMouse = newSettings.followMouse;
+        settings.showFloor = newSettings.showFloor;
     },
     updateCameraSettings: function (cameraSettings) {
-        // Update transition speed if provided
         if (cameraSettings.transition !== undefined) {
             _cameraLerpFactor = 1 - Math.pow(0.1, 1 / (cameraSettings.transition * 60));
         }
-
-        // Update position if provided
         if (cameraSettings.x !== undefined &&
             cameraSettings.y !== undefined &&
             cameraSettings.z !== undefined) {

@@ -29,6 +29,8 @@ exports.useTriangleParticles = true;
 // exports.followMouse = !exports.isMobile;
 exports.followMouse = true;
 
+exports.showFloor = true
+
 exports.speed = 1;
 exports.dieSpeed = 0.015;
 exports.radius = amountInfo[2] * 1.3;
@@ -50,5 +52,5 @@ var motionBlurQualityMap = exports.motionBlurQualityMap = {
 exports.motionBlurQualityList = keys(motionBlurQualityMap);
 query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
 exports.motionBlur = false;
-exports.motionBlurPause = false;
+exports.motionBlurPause = true;
 exports.bloom = false;
