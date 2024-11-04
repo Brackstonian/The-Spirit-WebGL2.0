@@ -1,14 +1,6 @@
-
-
-
-var dat = require('dat-gui');
-var Stats = require('stats.js');
-var css = require('dom-css');
 var raf = require('raf');
 
 var undef;
-var _gui;
-var _stats;
 
 var _width = 0;
 var _height = 0;
@@ -74,18 +66,6 @@ function init(externalTHREE, container) {
     particles = require('./3d/particles');
     lights = require('./3d/lights');
     floor = require('./3d/floor');
-    
-    if (settings.useStats) {
-        _stats = new Stats();
-        css(_stats.domElement, {
-            position: 'absolute',
-            left: '0px',
-            top: '0px',
-            zIndex: 2048
-        });
-
-        document.body.appendChild(_stats.domElement);
-    }
 
     _bgColor = new THREE.Color(settings.bgColor);
     settings.mouse = new THREE.Vector2(0, 0);
@@ -174,9 +154,6 @@ function _onResize() {
 function _loop() {
     var newTime = Date.now();
     raf(_loop);
-    if (settings.useStats) _stats.begin();
-    _render(newTime - _time, newTime);
-    if (settings.useStats) _stats.end();
     _time = newTime;
 }
 
@@ -250,7 +227,6 @@ module.exports = {
         settings.shadowDarkness = newSettings.shadowDarkness;
         settings.simulatorTextureWidth = newSettings.simulatorTextureWidth;
         settings.simulatorTextureHeight = newSettings.simulatorTextureHeight;
-        settings.useStats = newSettings.useStats;
         if (newSettings.cameraTransitionSpeed !== undefined) {
             _cameraLerpFactor = 1 - Math.pow(0.1, 1 / (newSettings.cameraTransitionSpeed * 60));
         }

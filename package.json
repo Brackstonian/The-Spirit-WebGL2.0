@@ -1,49 +1,32 @@
 {
   "name": "the-spirit-webgl2",
-  "version": "2.0.12",
-  "private": true,
-  "description": "",
+  "version": "2.1.0",
+  "description": "WebGL2 Spirit Library",
   "main": "app/index.js",
-  "files": ["app"],
+  "files": [
+    "app"
+  ],
   "dependencies": {
-    "computed-style": "0.3.0",
-    "dat-gui": "0.5.0",
-    "dom-css": "^1.1.1",
+    "chokidar": "^4.0.1",
     "gl-matrix": "^2.3.1",
-    "glsl-random": "^0.0.5",
-    "glsl-noise": "^0.0.0",
     "glsl-fxaa": "^3.0.0",
-    "incremental-convex-hull": "^1.0.1",
-    "min-signal": "^0.0.5",
-    "mout": "0.11",
-    "quick-loader": "^0.1.4",
-    "raf": "3.0.0",
-    "stats.js": "mrdoob/stats.js",
-    "underscore": "^1.8.3",
-    "ws": "^0.8.0"
+    "glsl-noise": "^0.0.0",
+    "glsl-random": "^0.0.5",
+    "mout": "^1.2.4",
+    "raf": "^3.4.1"
   },
   "devDependencies": {
     "browserify": "^17.0.0",
-    "budo": "^11.7.0",
     "bundle-collapser": "^1.2.1",
-    "dirlist": "^1.0.2",
     "glslify": "^7.1.1",
-    "hasha": "^5.2.2",
-    "installify": "^1.1.0",
-    "map-limit": "0.0.1",
-    "minifyify": "^7.3.5",
-    "minimist": "^1.2.8",
-    "opn": "^6.0.0",
-    "simple-html-index": "^1.1.2",
     "uglify-js": "^3.17.4"
   },
   "peerDependencies": {
     "three": "^0.154.0"
   },
   "scripts": {
-    "dev": "node dev.js",
-    "build": "node build.js"
+    "build": "node build.js",
+    "watch": "node build.js --watch"
   },
-  "author": "",
   "license": "MIT"
 }
