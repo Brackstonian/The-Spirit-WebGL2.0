@@ -209,7 +209,7 @@ function _render(dt, newTime) {
 
 module.exports = {
     init,
-    updateSettings: function (newSettings, cameraSettings) {
+    updateSettings: function (newSettings) {
         settings.speed = newSettings.speed;
         settings.dieSpeed = newSettings.dieSpeed;
         settings.bgColor = newSettings.bgColor;
@@ -224,16 +224,16 @@ module.exports = {
         settings.simulatorTextureWidth = newSettings.simulatorTextureWidth;
         settings.simulatorTextureHeight = newSettings.simulatorTextureHeight;
         settings.useStats = newSettings.useStats;
-        if (cameraSettings.transition !== undefined) {
-            _cameraLerpFactor = 1 - Math.pow(0.1, 1 / (cameraSettings.transition * 60));
+        if (newSettings.cameraTransitionSpeed !== undefined) {
+            _cameraLerpFactor = 1 - Math.pow(0.1, 1 / (newSettings.cameraTransitionSpeed * 60));
         }
-        if (cameraSettings.x !== undefined &&
-            cameraSettings.y !== undefined &&
-            cameraSettings.z !== undefined) {
+        if (newSettings.cameraX !== undefined &&
+            newSettings.cameraY !== undefined &&
+            newSettings.cameraZ !== undefined) {
             _targetCameraPosition.set(
-                cameraSettings.x,
-                cameraSettings.y,
-                cameraSettings.z
+                newSettings.cameraX,
+                newSettings.cameraY,
+                newSettings.cameraZ
             );
         }
         if (newSettings.pattern) {
