@@ -1,6 +1,6 @@
 {
   "name": "the-spirit-webgl2",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "private": true,
   "description": "",
   "main": "app/index.js",
