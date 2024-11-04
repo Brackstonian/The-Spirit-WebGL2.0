@@ -78,10 +78,6 @@ function init(externalTHREE, container) {
     _renderer.shadowMap.enabled = true;
     _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(_renderer.domElement);
-    css(_renderer.domElement.parentElement,
-        {
-            overflow: 'hidden'
-        });
 
     _scene = new THREE.Scene();
     _scene.fog = new THREE.FogExp2(settings.bgColor, 0.001);
@@ -154,6 +150,7 @@ function _onResize() {
 function _loop() {
     var newTime = Date.now();
     raf(_loop);
+    _render(newTime - _time, newTime);
     _time = newTime;
 }
 
