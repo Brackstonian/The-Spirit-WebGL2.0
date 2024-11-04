@@ -32,13 +32,13 @@ function runBuild(f) {
       console.log('Compressing', f);
       var result = UglifyJS.minify(src.toString(), {
         compress: true,
-        mangle: false
+        mangle: true
       });
       if (result.error) return reject(result.error);
       console.log('Writing', f);
-      fs.mkdir('app/js', { recursive: true }, function (err) {
+      fs.mkdir('app/', { recursive: true }, function (err) {
         if (err) return reject(err);
-        fs.writeFile('app/js/' + f, result.code, function (err) {
+        fs.writeFile('app/' + f, result.code, function (err) {
           if (err) return reject(err);
           resolve();
         });
