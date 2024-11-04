@@ -22,6 +22,7 @@ function runBuild(f) {
       standalone: 'spiritWebgl'
     });
     b.plugin(require('bundle-collapser/plugin'));
+    b.exclude('three');
     var transforms = [['glslify', { global: true }]];
     transforms.forEach(function (t) {
       b.transform(t);
@@ -31,7 +32,7 @@ function runBuild(f) {
       console.log('Compressing', f);
       var result = UglifyJS.minify(src.toString(), {
         compress: true,
-        mangle: true
+        mangle: false
       });
       if (result.error) return reject(result.error);
       console.log('Writing', f);

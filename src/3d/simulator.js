@@ -1,5 +1,5 @@
 var settings = require('../core/settings');
-var THREE = require('three');
+var THREE = window.THREE
 
 var undef;
 

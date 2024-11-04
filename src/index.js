@@ -1,26 +1,10 @@
+
+
+
 var dat = require('dat-gui');
 var Stats = require('stats.js');
 var css = require('dom-css');
 var raf = require('raf');
-
-var THREE = require('three');
-
-var settings = require('./core/settings');
-
-var math = require('./utils/math');
-var ease = require('./utils/ease');
-var mobile = require('./fallback/mobile');
-var encode = require('mout/queryString/encode');
-
-var postprocessing = require('./3d/postprocessing/postprocessing');
-var motionBlur = require('./3d/postprocessing/motionBlur/motionBlur');
-var fxaa = require('./3d/postprocessing/fxaa/fxaa');
-var bloom = require('./3d/postprocessing/bloom/bloom');
-var fboHelper = require('./3d/fboHelper');
-var simulator = require('./3d/simulator');
-var particles = require('./3d/particles');
-var lights = require('./3d/lights');
-var floor = require('./3d/floor');
 
 var undef;
 var _gui;
@@ -34,21 +18,63 @@ var _scene;
 var _renderer;
 
 var _time = 0;
-var _ray = new THREE.Ray();
+var _ray;
 
 var _initAnimation = 0;
 
 var _bgColor;
-var _logo;
-var _instruction;
-var _footerItems;
 
-// New camera smoothing variables
-var _currentCameraPosition = new THREE.Vector3();
-var _targetCameraPosition = new THREE.Vector3();
-var _cameraLerpFactor = 0.05; // Adjust this value to control smoothing (0-1)
+var _currentCameraPosition;
+var _targetCameraPosition;
+var _cameraLerpFactor = 0.05;
 
-function init(container) {
+var motionBlur;
+var fxaa; 
+var bloom; 
+var fboHelper; 
+var simulator; 
+var particles; 
+var lights; 
+var floor; 
+var settings; 
+var postprocessing;
+var math;
+var settings;
+
+function initTHREE(externalTHREE) {
+    if (!externalTHREE) {
+        throw new Error('THREE must be provided to initialize the WebGL experience');
+    }
+    
+    window.THREE = externalTHREE;
+    THREE = externalTHREE;
+    
+    return window.THREE;
+}
+
+function init(externalTHREE, container) {
+    initTHREE(externalTHREE)
+
+    _ray = new THREE.Ray();
+    _currentCameraPosition = new THREE.Vector3();
+    _targetCameraPosition = new THREE.Vector3();
+
+
+    settings = require('./core/settings');
+    math = require('./utils/math');
+    var ease = require('./utils/ease');
+    var encode = require('mout/queryString/encode');
+    
+    postprocessing = require('./3d/postprocessing/postprocessing');
+    motionBlur = require('./3d/postprocessing/motionBlur/motionBlur');
+    fxaa = require('./3d/postprocessing/fxaa/fxaa');
+    bloom = require('./3d/postprocessing/bloom/bloom');
+    fboHelper = require('./3d/fboHelper');
+    simulator = require('./3d/simulator');
+    particles = require('./3d/particles');
+    lights = require('./3d/lights');
+    floor = require('./3d/floor');
+    
     if (settings.useStats) {
         _stats = new Stats();
         css(_stats.domElement, {
@@ -209,6 +235,7 @@ function _render(dt, newTime) {
 
 module.exports = {
     init,
+    initTHREE,
     updateSettings: function (newSettings) {
         settings.speed = newSettings.speed;
         settings.dieSpeed = newSettings.dieSpeed;

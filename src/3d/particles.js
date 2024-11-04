@@ -1,5 +1,5 @@
 var settings = require('../core/settings');
-var THREE = require('three');
+var THREE = window.THREE
 var shaderParse = require('../helpers/shaderParse');
 var glslify = require('glslify');
 var simulator = require('./simulator');

@@ -1,4 +1,4 @@
-var THREE = require('three');
+var THREE = window.THREE
 var glslify = require('glslify');
 var mixIn = require('mout/object/mixIn');
 var fillIn = require('mout/object/fillIn');

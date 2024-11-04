@@ -1,4 +1,4 @@
-var THREE = require('three');
+var THREE = window.THREE
 var fboHelper = require('../fboHelper');
 var merge = require('mout/object/merge');
 

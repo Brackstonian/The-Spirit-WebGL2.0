@@ -1,4 +1,4 @@
-var THREE = require('three');
+var THREE = window.THREE
 
 var threeChunkReplaceRegExp = /\/\/\s?chunk_replace\s(.+)([\d\D]+)\/\/\s?end_chunk_replace/gm;
 var threeChunkRegExp = /\/\/\s?chunk\(\s?(\w+)\s?\);/g;

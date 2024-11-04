@@ -1,4 +1,4 @@
-//var THREE = require('three');
+//var THREE = window.THREE
 
 /**
  * @author qiao / https://github.com/qiao

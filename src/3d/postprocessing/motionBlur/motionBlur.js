@@ -3,7 +3,7 @@ var effectComposer = require('../effectComposer');
 var fboHelper = require('../../fboHelper');
 
 var glslify = require('glslify');
-var THREE = require('three');
+var THREE = window.THREE
 
 var undef;
 
