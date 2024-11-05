@@ -36,15 +36,15 @@ function init() {
 }
 
 function update(dt) {
-    var normalizedlightIntesity = Math.min(Math.max(settings.lightIntesity, 0), 1);
+    var normalizedlightIntensity = Math.min(Math.max(settings.lightIntensity, 0), 1);
 
-    if (normalizedlightIntesity <= 0) {
+    if (normalizedlightIntensity <= 0) {
         pointLight.castShadow = false;
         _currentIntensity = 1;
     } else {
         pointLight.castShadow = true;
 
-        var targetIntensity = normalizedlightIntesity * 1; // Adjust multiplier as needed
+        var targetIntensity = normalizedlightIntensity * 1; // Adjust multiplier as needed
         _currentIntensity += (targetIntensity - _currentIntensity) * 0.1;
     }
 

@@ -2,25 +2,6 @@ var parse = require('mout/queryString/parse');
 var keys = require('mout/object/keys');
 var query = exports.query = parse(window.location.href.replace('#', '?'));
 
-
-// Core orb behavior
-exports.speed = 1;
-exports.dieSpeed = 0.015;
-exports.radius = amountInfo[2] * 1.3;
-exports.curlSize = 0.02;
-exports.attraction = 1;
-
-// Orb colors and appearance
-exports.color1 = '#6998AB';  // Medium blue
-exports.color2 = '#B1D0E0';  // Light blue
-exports.lightIntesity = 0.01;
-exports.followMouse = true;
-
-
-// System detection / Debugging
-exports.useStats = false;
-exports.isMobile = /(iPad|iPhone|Android)/i.test(navigator.userAgent);
-
 // Texture/Resolution settings
 var amountMap = {
     '4k': [64, 64, 0.29],
@@ -38,6 +19,27 @@ var amountMap = {
 exports.amountList = keys(amountMap);
 query.amount = amountMap[query.amount] ? query.amount : exports.isMobile ? '16k' : '65k';
 var amountInfo = amountMap[query.amount];
+
+// Core orb behavior
+exports.speed = 1;
+exports.dieSpeed = 0.015;
+exports.radius = amountInfo[2] * 1.3;
+exports.curlSize = 0.02;
+exports.attraction = 1;
+
+// Orb colors and appearance
+exports.color1 = '#6998AB';  // Medium blue
+exports.color2 = '#B1D0E0';  // Light blue
+exports.lightIntensity = 0.01;
+exports.followMouse = true;
+
+
+// System detection / Debugging
+exports.useStats = false;
+exports.isMobile = /(iPad|iPhone|Android)/i.test(navigator.userAgent);
+
+
+
 exports.simulatorTextureWidth = amountInfo[0];
 exports.simulatorTextureHeight = amountInfo[1];
 
