@@ -221,7 +221,7 @@ module.exports = {
         settings.color2 = newSettings.color2;
         settings.curlSize = newSettings.curlSize;
         settings.radius = newSettings.radius;
-        settings.shadowDarkness = newSettings.shadowDarkness;
+        settings.lightIntesity = newSettings.lightIntesity;
         settings.simulatorTextureWidth = newSettings.simulatorTextureWidth;
         settings.simulatorTextureHeight = newSettings.simulatorTextureHeight;
         if (newSettings.cameraTransitionSpeed !== undefined) {
