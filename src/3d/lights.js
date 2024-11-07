@@ -17,7 +17,8 @@ function init() {
     var ambient = new THREE.AmbientLight(0x333333);
     mesh.add(ambient);
 
-    pointLight = exports.pointLight = new THREE.PointLight(0xffffff, _currentIntensity, 700);
+    pointLight = exports.pointLight = new THREE.PointLight(0xffffff, _currentIntensity, 4096);
+    // pointLight.position.set( 0,0,0 );
     pointLight.castShadow = true;
     pointLight.shadow.mapSize.width = 4096;
     pointLight.shadow.mapSize.height = 2048;

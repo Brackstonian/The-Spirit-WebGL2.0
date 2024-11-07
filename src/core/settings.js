@@ -20,18 +20,24 @@ exports.amountList = keys(amountMap);
 query.amount = amountMap[query.amount] ? query.amount : exports.isMobile ? '16k' : '65k';
 var amountInfo = amountMap[query.amount];
 
-// Core orb behavior
-exports.speed = 1;
-exports.dieSpeed = 0.015;
-exports.radius = amountInfo[2] * 1.3;
-exports.curlSize = 0.02;
-exports.attraction = 1;
 
-// Orb colors and appearance
-exports.color1 = '#6998AB';  // Medium blue
-exports.color2 = '#B1D0E0';  // Light blue
-exports.lightIntensity = 0.01;
-exports.followMouse = true;
+// Core orb behavior
+exports.orbDisplay = [false, false];
+exports.speed = [1, 10];
+exports.dieSpeed = [0.015, 0.015];
+exports.radius = [0.5, 1];
+exports.curlSize = [0.02, 0.04];
+exports.attraction = [1, 2];
+exports.color1 = ['#6998AB', '#B1D0E0'];  // Medium blue
+exports.color2 = ['#B1D0E0', '#6998AB'];  // Light blue
+exports.pattern = ['default', 'spiral'];
+exports.followMouse = [true, false];
+
+
+// Scene settings
+exports.bgColor = '#FFFFFF';
+exports.lightIntensity = 0.1;
+
 
 
 // System detection / Debugging
@@ -43,10 +49,6 @@ exports.isMobile = /(iPad|iPhone|Android)/i.test(navigator.userAgent);
 exports.simulatorTextureWidth = amountInfo[0];
 exports.simulatorTextureHeight = amountInfo[1];
 
-// Scene settings
-exports.useTriangleParticles = true;
-exports.showFloor = true
-exports.bgColor = '#1A374D';  // Deep blue-grey
 
 
 // Post-processing settings

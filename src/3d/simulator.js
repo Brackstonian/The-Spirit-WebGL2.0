@@ -1,23 +1,24 @@
 var settings = require('../core/settings');
-var THREE = window.THREE
-
-var undef;
-
+var THREE = window.THREE;
 var glslify = require('glslify');
 var shaderParse = require('../helpers/shaderParse');
 
 var _copyShader;
-var _positionShader;
 var _textureDefaultPosition;
-var _positionRenderTarget;
-var _positionRenderTarget2;
-
 var _renderer;
 var _mesh;
 var _scene;
 var _camera;
-var _followPoint;
-var _followPointTime = 0;
+
+var positionShaders = []; // Array to hold position shaders for each orb
+exports.positionShaders = positionShaders;
+var positionRenderTargets = []; // Array to hold render targets for each orb
+var positionRenderTargets2 = []; // Array for secondary render targets (for swapping)
+
+var followPoints = []; // Array to hold follow points
+exports.followPoints = followPoints;
+var followPointTimes = []; // Array to hold time for each follow point
+var pointDistance = 150; // Set the distance between follow points
 
 var TEXTURE_WIDTH = exports.TEXTURE_WIDTH = settings.simulatorTextureWidth;
 var TEXTURE_HEIGHT = exports.TEXTURE_HEIGHT = settings.simulatorTextureHeight;
@@ -27,12 +28,16 @@ exports.init = init;
 exports.update = update;
 exports.initAnimation = 0;
 
-exports.positionRenderTarget = undef;
-exports.prevPositionRenderTarget = undef;
+exports.positionRenderTarget = [];
 
-exports.setPattern = (patternName) => {
-    if (patterns[patternName]) {
-        currentPattern = patternName;
+
+var currentPattern = settings.pattern; // this is an array  ['default', 'spiral'];
+
+exports.setPattern = (patternInput) => {
+    if (Array.isArray(patternInput)) {
+        currentPattern = patternInput.filter(patternName => patterns[patternName]);
+    } else if (patterns[patternInput]) {
+        currentPattern = [patternInput];
     }
 };
 
@@ -59,13 +64,20 @@ const patterns = {
     })
 };
 
-var currentPattern = 'default';
 
+// Function to add a new follow point
+function addFollowPoint() {
+    var newPoint = new THREE.Vector3();
+    followPoints.push(newPoint);
+    followPointTimes.push(0); // Initialize time for the new follow point
+}
 
-function init(renderer) {
-
+// Modified init function to initialize multiple follow points and shaders
+function init(renderer, numOrbs = 2) {
     _renderer = renderer;
-    _followPoint = new THREE.Vector3();
+    _scene = new THREE.Scene();
+    _camera = new THREE.Camera();
+    _camera.position.z = 1;
 
     var rawShaderPrefix = 'precision ' + renderer.capabilities.precision + ' float;\n';
 
@@ -75,59 +87,73 @@ function init(renderer) {
         return;
     }
 
-    _scene = new THREE.Scene();
-    _camera = new THREE.Camera();
-    _camera.position.z = 1;
-
     _copyShader = new THREE.RawShaderMaterial({
         uniforms: {
             resolution: { type: 'v2', value: new THREE.Vector2(TEXTURE_WIDTH, TEXTURE_HEIGHT) },
-            texture: { type: 't', value: undef }
+            texture: { type: 't', value: undefined }
         },
         vertexShader: rawShaderPrefix + shaderParse(glslify('../glsl/quad.vert')),
         fragmentShader: rawShaderPrefix + shaderParse(glslify('../glsl/through.frag'))
     });
 
-    _positionShader = new THREE.RawShaderMaterial({
-        uniforms: {
-            resolution: { type: 'v2', value: new THREE.Vector2(TEXTURE_WIDTH, TEXTURE_HEIGHT) },
-            texturePosition: { type: 't', value: undef },
-            textureDefaultPosition: { type: 't', value: undef },
-            mouse3d: { type: 'v3', value: new THREE.Vector3 },
-            speed: { type: 'f', value: 1 },
-            dieSpeed: { type: 'f', value: 0 },
-            radius: { type: 'f', value: 0 },
-            curlSize: { type: 'f', value: 0 },
-            attraction: { type: 'f', value: 0 },
-            time: { type: 'f', value: 0 },
-            initAnimation: { type: 'f', value: 0 }
-        },
-        vertexShader: rawShaderPrefix + shaderParse(glslify('../glsl/quad.vert')),
-        fragmentShader: rawShaderPrefix + shaderParse(glslify('../glsl/position.frag')),
-        blending: THREE.NoBlending,
-        transparent: false,
-        depthWrite: false,
-        depthTest: false
-    });
-
     _mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), _copyShader);
     _scene.add(_mesh);
 
-    _positionRenderTarget = new THREE.WebGLRenderTarget(TEXTURE_WIDTH, TEXTURE_HEIGHT, {
-        wrapS: THREE.ClampToEdgeWrapping,
-        wrapT: THREE.ClampToEdgeWrapping,
-        minFilter: THREE.NearestFilter,
-        magFilter: THREE.NearestFilter,
-        format: THREE.RGBAFormat,
-        type: THREE.FloatType,
-        depthWrite: false,
-        depthBuffer: false,
-        stencilBuffer: false
-    });
-    _positionRenderTarget2 = _positionRenderTarget.clone();
-    var texture = _createPositionTexture();
-    _copyTexture(texture, _positionRenderTarget);
-    _copyTexture(texture, _positionRenderTarget2);
+    // Initialize shaders, render targets, and follow points for each orb
+    for (let i = 0; i < numOrbs; i++) {
+        addFollowPoint();
+
+        const newShader = new THREE.RawShaderMaterial({
+            uniforms: {
+                resolution: { type: 'v2', value: new THREE.Vector2(TEXTURE_WIDTH, TEXTURE_HEIGHT) },
+                texturePosition: { type: 't', value: undefined },
+                textureDefaultPosition: { type: 't', value: undefined },
+                mouse3d: { type: 'v3', value: new THREE.Vector3() },
+                color1: { type: 'c', value: undefined },
+                color2: { type: 'c', value: undefined },
+                speed: { type: 'f', value: 1 },
+                dieSpeed: { type: 'f', value: 0 },
+                radius: { type: 'f', value: 0 },
+                curlSize: { type: 'f', value: 0 },
+                attraction: { type: 'f', value: 0 },
+                time: { type: 'f', value: 0 },
+                initAnimation: { type: 'f', value: 0 }
+            },
+            vertexShader: rawShaderPrefix + shaderParse(glslify('../glsl/quad.vert')),
+            fragmentShader: rawShaderPrefix + shaderParse(glslify('../glsl/position.frag')),
+            blending: THREE.NoBlending,
+            transparent: false,
+            depthWrite: false,
+            depthTest: false
+        });
+
+        positionShaders.push(newShader);
+        _scene.add(_mesh);
+
+
+        const renderTarget = new THREE.WebGLRenderTarget(TEXTURE_WIDTH, TEXTURE_HEIGHT, {
+            wrapS: THREE.ClampToEdgeWrapping,
+            wrapT: THREE.ClampToEdgeWrapping,
+            minFilter: THREE.NearestFilter,
+            magFilter: THREE.NearestFilter,
+            format: THREE.RGBAFormat,
+            type: THREE.FloatType,
+            depthWrite: false,
+            depthBuffer: false,
+            stencilBuffer: false
+        });
+        
+        const renderTarget2 = renderTarget.clone();
+        positionRenderTargets.push(renderTarget);
+        positionRenderTargets2.push(renderTarget2);
+
+        exports.positionRenderTargets = positionRenderTargets;
+
+
+        const texture = _createPositionTexture();
+        _copyTexture(texture, renderTarget);
+        _copyTexture(texture, renderTarget2);
+    }
 }
 
 function _copyTexture(input, output) {
@@ -139,19 +165,21 @@ function _copyTexture(input, output) {
 }
 
 function _updatePosition(dt) {
+    positionShaders.forEach((shader, index) => {
+        // Swap render targets for each orb
+        const tmp = positionRenderTargets[index];
+        positionRenderTargets[index] = positionRenderTargets2[index];
+        positionRenderTargets2[index] = tmp;
 
-    // swap
-    var tmp = _positionRenderTarget;
-    _positionRenderTarget = _positionRenderTarget2;
-    _positionRenderTarget2 = tmp;
+        _mesh.material = shader;
+        shader.uniforms.textureDefaultPosition.value = _textureDefaultPosition;
+        shader.uniforms.texturePosition.value = positionRenderTargets2[index].texture;
+        shader.uniforms.time.value += dt * 0.001;
 
-    _mesh.material = _positionShader;
-    _positionShader.uniforms.textureDefaultPosition.value = _textureDefaultPosition;
-    _positionShader.uniforms.texturePosition.value = _positionRenderTarget2.texture;
-    _positionShader.uniforms.time.value += dt * 0.001;
-    _renderer.setRenderTarget(_positionRenderTarget);
-    _renderer.render(_scene, _camera);
-    _renderer.setRenderTarget(null);
+        _renderer.setRenderTarget(positionRenderTargets[index]);
+        _renderer.render(_scene, _camera);
+        _renderer.setRenderTarget(null);
+    });
 }
 
 function _createPositionTexture() {
@@ -160,7 +188,6 @@ function _createPositionTexture() {
     var r, phi, theta;
     for (var i = 0; i < AMOUNT; i++) {
         i4 = i * 4;
-        // r = (0.5 + Math.pow(Math.random(), 0.4) * 0.5) * 50;
         r = (0.5 + Math.random() * 0.5) * 50;
         phi = (Math.random() - 0.5) * Math.PI;
         theta = Math.random() * Math.PI * 2;
@@ -180,45 +207,39 @@ function _createPositionTexture() {
 }
 
 function update(dt) {
-    if (settings.speed || settings.dieSpeed) {
-        var r = 200;
-        var h = 60;
-        if (settings.isMobile) {
-            r = 100;
-            h = 40;
-        }
-
-        var autoClearColor = _renderer.autoClearColor;
-        var clearColor = _renderer.getClearColor(new THREE.Color()).getHex();
-        var clearAlpha = _renderer.getClearAlpha();
-
-        _renderer.autoClearColor = false;
-
-        var deltaRatio = dt / 16.6667;
-
-        _positionShader.uniforms.speed.value = settings.speed * deltaRatio;
-        _positionShader.uniforms.dieSpeed.value = settings.dieSpeed * deltaRatio;
-        _positionShader.uniforms.radius.value = settings.radius;
-        _positionShader.uniforms.curlSize.value = settings.curlSize;
-        _positionShader.uniforms.attraction.value = settings.attraction;
-        _positionShader.uniforms.initAnimation.value = exports.initAnimation;
-
-        if (settings.followMouse) {
-            _positionShader.uniforms.mouse3d.value.copy(settings.mouse3d);
-        } else {
-            _followPointTime += dt * 0.001 * settings.speed;
-            const pattern = patterns[currentPattern];
-            const pos = pattern(_followPointTime, r, h);
-            _followPoint.set(pos.x, pos.y, pos.z);
-            _positionShader.uniforms.mouse3d.value.lerp(_followPoint, 0.2);
-        }
-
-        _updatePosition(dt);
-
-        _renderer.setClearColor(clearColor, clearAlpha);
-        _renderer.autoClearColor = autoClearColor;
-        exports.positionRenderTarget = _positionRenderTarget;
-        exports.prevPositionRenderTarget = _positionRenderTarget2;
+    let r = 200, h = 60;
+    if (settings.isMobile) {
+        r = 100;
+        h = 40;
     }
+    var autoClearColor = _renderer.autoClearColor;
+    var clearColor = _renderer.getClearColor(new THREE.Color()).getHex();
+    var clearAlpha = _renderer.getClearAlpha();
+
+    _renderer.autoClearColor = false;
+
+    followPoints.forEach((point, index) => {
+        positionShaders[index].uniforms.mouse3d.value.copy(point);
+        positionShaders[index].uniforms.speed.value = settings.speed[index];
+        positionShaders[index].uniforms.dieSpeed.value = settings.dieSpeed[index];
+        positionShaders[index].uniforms.radius.value = settings.radius[index];
+        positionShaders[index].uniforms.curlSize.value = settings.curlSize[index];
+        positionShaders[index].uniforms.attraction.value = settings.attraction[index];
+        positionShaders[index].uniforms.initAnimation.value = exports.initAnimation;
+
+        if (settings.followMouse[index]) {
+            positionShaders[index].uniforms.mouse3d.value.copy(settings.mouse3d);
+        } else {
+            followPointTimes[index] += dt * 0.001 * settings.speed[index];
+            const patternName = currentPattern[index];
+            const pos = patterns[patternName](followPointTimes[index], r, h);
+            point.set(pos.x + index * pointDistance, pos.y, pos.z);
+        }
+    });
+
+    _updatePosition(dt);
+
+    _renderer.setClearColor(clearColor, clearAlpha);
+    _renderer.autoClearColor = autoClearColor;
 }
 

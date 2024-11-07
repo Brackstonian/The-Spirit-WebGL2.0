@@ -16,6 +16,7 @@ var _initAnimation = 0;
 
 var _bgColor;
 
+
 var _currentCameraPosition;
 var _targetCameraPosition;
 var _cameraLerpFactor = 0.05;
@@ -120,10 +121,10 @@ function init(externalTHREE, container) {
 }
 
 function _onKeyUp(evt) {
-    if (evt.keyCode === 32) {
-        settings.speed = settings.speed === 0 ? 1 : 0;
-        settings.dieSpeed = settings.dieSpeed === 0 ? 0.015 : 0;
-    }
+    // if (evt.keyCode === 32) {
+    //     settings.speed = settings.speed === 0 ? 1 : 0;
+    //     settings.dieSpeed = settings.dieSpeed === 0 ? 0.015 : 0;
+    // }
 }
 
 function _bindTouch(func) {
@@ -163,7 +164,7 @@ function _render(dt, newTime) {
     _camera.position.copy(_currentCameraPosition);
     _camera.lookAt(0, 0, 0);
 
-    motionBlur.skipMatrixUpdate = !(settings.dieSpeed || settings.speed) && settings.motionBlurPause;
+    // motionBlur.skipMatrixUpdate = !(settings.dieSpeed || settings.speed) && settings.motionBlurPause;
 
     var ratio;
     _bgColor.setStyle(settings.bgColor);
@@ -179,7 +180,7 @@ function _render(dt, newTime) {
 
 
     // Floor visibility
-    floor.mesh.visible = settings.showFloor;
+    floor.mesh.visible = false;
 
     // update mouse3d
     _camera.updateMatrixWorld();
@@ -211,16 +212,17 @@ module.exports = {
     init,
     initTHREE,
     updateSettings: function (newSettings) {
+        settings.orbDisplay = newSettings.orbDisplay;
         settings.speed = newSettings.speed;
         settings.dieSpeed = newSettings.dieSpeed;
-        settings.bgColor = newSettings.bgColor;
-        settings.followMouse = newSettings.followMouse;
-        settings.showFloor = newSettings.showFloor;
+        settings.radius = newSettings.radius;
+        settings.curlSize = newSettings.curlSize;
         settings.attraction = newSettings.attraction;
         settings.color1 = newSettings.color1;
         settings.color2 = newSettings.color2;
-        settings.curlSize = newSettings.curlSize;
-        settings.radius = newSettings.radius;
+
+        settings.bgColor = newSettings.bgColor;
+        settings.followMouse = newSettings.followMouse;
         settings.lightIntensity = newSettings.lightIntensity;
         settings.simulatorTextureWidth = newSettings.simulatorTextureWidth;
         settings.simulatorTextureHeight = newSettings.simulatorTextureHeight;
@@ -237,6 +239,7 @@ module.exports = {
             );
         }
         if (newSettings.pattern) {
+            settings.pattern = newSettings.pattern;
             simulator.setPattern(newSettings.pattern);
         }
     }
