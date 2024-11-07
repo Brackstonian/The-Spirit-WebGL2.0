@@ -73,9 +73,10 @@ function init(externalTHREE, container) {
     settings.mouse3d = _ray.origin;
 
     _renderer = new THREE.WebGLRenderer({
-        antialias: true
+        antialias: true,
+        alpha: true
     });
-    _renderer.setClearColor(settings.bgColor);
+    _renderer.setClearColor(settings.bgColor, settings.bgOpacity);
     _renderer.shadowMap.enabled = true;
     _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(_renderer.domElement);
@@ -171,7 +172,7 @@ function _render(dt, newTime) {
     var tmpColor = floor.mesh.material.color;
     tmpColor = _bgColor;
     _scene.fog.color.copy(tmpColor);
-    _renderer.setClearColor(tmpColor.getHex());
+    _renderer.setClearColor(tmpColor.getHex(), settings.bgOpacity);
 
     _initAnimation = Math.min(_initAnimation + dt * 0.00025, 1);
     simulator.initAnimation = _initAnimation;
@@ -222,6 +223,7 @@ module.exports = {
         settings.color2 = newSettings.color2;
 
         settings.bgColor = newSettings.bgColor;
+        settings.bgOpacity = newSettings.bgOpacity;
         settings.followMouse = newSettings.followMouse;
         settings.lightIntensity = newSettings.lightIntensity;
         settings.simulatorTextureWidth = newSettings.simulatorTextureWidth;

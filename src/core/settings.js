@@ -36,6 +36,7 @@ exports.followMouse = [true, false];
 
 // Scene settings
 exports.bgColor = '#FFFFFF';
+exports.bgOpacity = 0.5;
 exports.lightIntensity = 0.1;
 
 
