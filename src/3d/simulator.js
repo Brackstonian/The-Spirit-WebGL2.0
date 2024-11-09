@@ -1,4 +1,6 @@
 var settings = require('../core/settings');
+const patterns = require('../core/patterns'); // Import the patterns from patterns.js
+
 var THREE = window.THREE;
 var glslify = require('glslify');
 var shaderParse = require('../helpers/shaderParse');
@@ -30,7 +32,6 @@ exports.initAnimation = 0;
 
 exports.positionRenderTarget = [];
 
-
 var currentPattern = settings.pattern; // this is an array  ['default', 'spiral'];
 
 exports.setPattern = (patternInput) => {
@@ -40,30 +41,6 @@ exports.setPattern = (patternInput) => {
         currentPattern = [patternInput];
     }
 };
-
-const patterns = {
-    default: (time, r, h) => ({
-        x: Math.cos(time) * r,
-        y: Math.cos(time * 4.0) * h,
-        z: Math.sin(time * 2.0) * r
-    }),
-    circle: (time, r, h) => ({
-        x: Math.cos(time) * r,
-        y: Math.sin(time * 2) * h,
-        z: Math.sin(time) * r
-    }),
-    spiral: (time, r, h) => ({
-        x: Math.cos(time) * r * (1 - time * 0.1 % 1),
-        y: time * 10 % h,
-        z: Math.sin(time) * r * (1 - time * 0.1 % 1)
-    }),
-    still: (time, r, h) => ({
-        x: r * 0.5,
-        y: 0,
-        z: r * 0.5
-    })
-};
-
 
 // Function to add a new follow point
 function addFollowPoint() {
@@ -231,9 +208,17 @@ function update(dt) {
             positionShaders[index].uniforms.mouse3d.value.copy(settings.mouse3d);
         } else {
             followPointTimes[index] += dt * 0.001 * settings.speed[index];
-            const patternName = currentPattern[index];
-            const pos = patterns[patternName](followPointTimes[index], r, h);
-            point.set(pos.x + index * pointDistance, pos.y, pos.z);
+            const pattern = patterns[currentPattern[index]] || patterns.default;
+            const segmentIndex = Math.floor(followPointTimes[index] % pattern.length);
+            const nextSegmentIndex = (segmentIndex + 1) % pattern.length;
+        
+            const startPoint = pattern[segmentIndex];
+            const endPoint = pattern[nextSegmentIndex];
+        
+            const t = followPointTimes[index] % 1; // Interpolation factor
+            point.lerpVectors(startPoint, endPoint, t);
+        
+            followPointTimes[index] += dt * 0.001 * settings.speed[index];
         }
     });
 

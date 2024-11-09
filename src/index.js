@@ -115,22 +115,47 @@ function init(externalTHREE, container) {
     window.addEventListener('mousemove', _onMove);
     window.addEventListener('touchmove', _bindTouch(_onMove));
     window.addEventListener('keyup', _onKeyUp);
-
     _time = Date.now();
     _onResize();
     _loop();
 }
 
+let previousPosition = null;
+
+function _onMouseDown(event) {
+    const mouse = new THREE.Vector2();
+    const raycaster = new THREE.Raycaster();
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, _camera);
+    const intersects = raycaster.intersectObjects(_scene.children, true);
+
+    if (intersects.length > 0) {
+        const position = intersects[0].point;
+        console.log(`new THREE.Vector3(${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)}),`);
+        previousPosition = position.clone();
+
+        // Create a red dot
+        const dotGeometry = new THREE.SphereGeometry(10, 16, 16); // Adjust size as needed
+        const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+        const dotMesh = new THREE.Mesh(dotGeometry, dotMaterial);
+        dotMesh.position.copy(position);
+        _scene.add(dotMesh);
+    }
+}
+
+
+
 function _onKeyUp(evt) {
-    // if (evt.keyCode === 32) {
-    //     settings.speed = settings.speed === 0 ? 1 : 0;
-    //     settings.dieSpeed = settings.dieSpeed === 0 ? 0.015 : 0;
-    // }
+    if (evt.key === 'p') {
+        window.addEventListener('mousedown', _onMouseDown);
+    }
 }
 
 function _bindTouch(func) {
     return function (evt) {
-        if (settings.isMobile && evt.preventDefault) {
+        if (settings.isMobile
+         && evt.preventDefault) {
             evt.preventDefault();
         }
         func(evt.changedTouches[0]);
