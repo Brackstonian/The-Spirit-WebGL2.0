@@ -122,29 +122,95 @@ function init(externalTHREE, container) {
 
 let previousPosition = null;
 
+
+const patternPoints = [];
+const dotMeshes = [];
+let line;
+let initialPoint = null; 
+let initialDot = null; 
+
+
 function _onMouseDown(event) {
     const mouse = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, _camera);
+
     const intersects = raycaster.intersectObjects(_scene.children, true);
 
-    if (intersects.length > 0) {
+    if (event.shiftKey) { 
+        _undoLastPoint();
+    } else if (intersects.length > 0) {
         const position = intersects[0].point;
-        console.log(`new THREE.Vector3(${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)}),`);
-        previousPosition = position.clone();
+        const intersectedObject = intersects[0].object;
 
-        // Create a red dot
-        const dotGeometry = new THREE.SphereGeometry(10, 16, 16); // Adjust size as needed
-        const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
+        if (intersectedObject === initialDot) {
+            console.log("Loop detected: logging complete pattern");
+            logPatternPoints();
+            return;
+        }
+
+        if (patternPoints.length === 0) {
+            initialPoint = position.clone();
+
+
+            const initialDotGeometry = new THREE.SphereGeometry(12, 16, 16); 
+            const initialDotMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); 
+            initialDot = new THREE.Mesh(initialDotGeometry, initialDotMaterial);
+            initialDot.position.copy(initialPoint);
+            _scene.add(initialDot);
+
+            dotMeshes.push(initialDot);
+        }
+
+        patternPoints.push(position.clone());
+
+        const dotGeometry = new THREE.SphereGeometry(10, 16, 16);
+        const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         const dotMesh = new THREE.Mesh(dotGeometry, dotMaterial);
         dotMesh.position.copy(position);
         _scene.add(dotMesh);
+
+        dotMeshes.push(dotMesh);
+
+        _updateLine();
     }
 }
 
+function _undoLastPoint() {
+    if (patternPoints.length === 0 || dotMeshes.length === 0) return;
+    patternPoints.pop();
+    const lastDot = dotMeshes.pop();
+    _scene.remove(lastDot);
 
+    _updateLine();
+
+    if (patternPoints.length === 0) {
+        initialPoint = null;
+        initialDot = null;
+    }
+}
+
+function _updateLine() {
+    if (line) _scene.remove(line);
+
+    if (patternPoints.length > 1) {
+        const curve = new THREE.CatmullRomCurve3(patternPoints);
+        const points = curve.getPoints(50);
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+        line = new THREE.Line(lineGeometry, lineMaterial);
+        _scene.add(line);
+    }
+}
+
+function logPatternPoints() {
+    console.log("Pattern Points:");
+    patternPoints.forEach((point) => {
+        console.log(`new THREE.Vector3(${point.x.toFixed(2)}, ${point.y.toFixed(2)}, ${point.z.toFixed(2)}),`);
+    });
+}
 
 function _onKeyUp(evt) {
     if (evt.key === 'p') {
@@ -154,8 +220,7 @@ function _onKeyUp(evt) {
 
 function _bindTouch(func) {
     return function (evt) {
-        if (settings.isMobile
-         && evt.preventDefault) {
+        if (settings.isMobile && evt.preventDefault) {
             evt.preventDefault();
         }
         func(evt.changedTouches[0]);
