@@ -17,7 +17,7 @@ var amountMap = {
     '4m': [2048, 2048, 2.5]
 };
 exports.amountList = keys(amountMap);
-query.amount = amountMap[query.amount] ? query.amount : exports.isMobile ? '16k' : '65k';
+query.amount = amountMap[query.amount] ? query.amount : '524k';
 var amountInfo = amountMap[query.amount];
 
 
@@ -39,6 +39,8 @@ exports.bgColor = '#FFFFFF';
 exports.bgOpacity = 0.5;
 exports.lightIntensity = 0.1;
 
+exports.bloomAmount = 1;
+
 
 
 // System detection / Debugging
@@ -53,7 +55,7 @@ exports.simulatorTextureHeight = amountInfo[1];
 
 
 // Post-processing settings
-exports.fxaa = false;
+exports.fxaa = true;
 var motionBlurQualityMap = exports.motionBlurQualityMap = {
     best: 1,
     high: 0.5,
@@ -61,7 +63,7 @@ var motionBlurQualityMap = exports.motionBlurQualityMap = {
     low: 0.25
 };
 exports.motionBlurQualityList = keys(motionBlurQualityMap);
-query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
-exports.motionBlur = false;
+query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'best';
+exports.motionBlur = true;
 exports.motionBlurPause = true;
-exports.bloom = false;
+exports.bloom = true;

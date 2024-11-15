@@ -1,6 +1,7 @@
 var Effect = require('../Effect');
 var effectComposer = require('../effectComposer');
 var fboHelper = require('../../fboHelper');
+var settings = require('../../../core/settings');
 
 var glslify = require('glslify');
 var THREE = window.THREE
@@ -12,9 +13,11 @@ var _super = Effect.prototype;
 
 exports.init = init;
 exports.render = render;
+exports.updateBloomAmount = updateBloomAmount;
 
-exports.blurRadius = 3.0;
-exports.amount = 0.3;
+exports.blurRadius = 2.5;
+exports.amount = settings.bloomAmount;
+console.log(settings.bloomAmount);
 
 var _blurMaterial;
 
@@ -25,7 +28,7 @@ function init() {
     _super.init.call(this, {
         uniforms: {
             u_blurTexture: { type: 't', value: undef },
-            u_amount: { type: 'f', value: 0 }
+            u_amount: { type: 'f', value: exports.amount }
         },
         fragmentShader: glslify('./bloom.frag')
     });
@@ -40,7 +43,6 @@ function init() {
     });
 
 }
-
 
 function render(dt, renderTarget, toScreen) {
 
@@ -62,5 +64,12 @@ function render(dt, renderTarget, toScreen) {
     this.uniforms.u_blurTexture.value = tmpRenderTarget2.texture;
     this.uniforms.u_amount.value = exports.amount;
     _super.render.call(this, dt, renderTarget, toScreen);
+}
 
+function updateBloomAmount(newAmount) {
+    exports.amount = newAmount;
+    // Also update the shader uniform if it has already been initialized
+    if (exports.uniforms && exports.uniforms.u_amount) {
+        exports.uniforms.u_amount.value = newAmount;
+    }
 }

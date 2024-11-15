@@ -330,9 +330,13 @@ module.exports = {
                 newSettings.cameraZ
             );
         }
-        if (newSettings.pattern) {
+        if (newSettings.pattern !== undefined) {
             settings.pattern = newSettings.pattern;
             simulator.setPattern(newSettings.pattern);
+        }
+        if (newSettings.bloomAmount !== undefined) {
+            settings.bloomAmount = newSettings.bloomAmount;
+            bloom.updateBloomAmount(settings.bloomAmount);
         }
     }
 };
