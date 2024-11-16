@@ -24,9 +24,9 @@ function init(renderer, scene, camera) {
     effectComposer.init(renderer, scene, camera);
 
     // for less power machine, pass true
-    fxaa.init(true);
+    // fxaa.init(true);
 
-    // fxaa.init();
+    fxaa.init();
     effectComposer.queue.push(fxaa);
 
     motionBlur.init();

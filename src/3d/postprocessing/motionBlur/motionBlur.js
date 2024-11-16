@@ -108,7 +108,7 @@ function init(sampleCount) {
         blendDstAlpha : THREE.OneFactor,
         depthTest: false,
         depthWrite: false,
-        transparent: false
+        transparent: true
     });
     _lines = new THREE.LineSegments(_linesGeometry, _linesMaterial);
     _linesScene.add(_lines);
