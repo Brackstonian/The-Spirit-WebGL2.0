@@ -219,6 +219,15 @@ function update(dt) {
             point.lerpVectors(startPoint, endPoint, t);
         
             followPointTimes[index] += dt * 0.001 * settings.speed[index];
+
+            if (currentPattern[0] === currentPattern[1] && settings.orbDisplay[0] === settings.orbDisplay[1]) {
+                point.z -= (pointDistance / 2);
+            }
+
+
+            if (index === 1 && currentPattern[0] === currentPattern[1]) {
+                point.z += pointDistance;
+            }
         }
     });
 
