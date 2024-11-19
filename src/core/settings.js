@@ -17,7 +17,7 @@ var amountMap = {
     '4m': [2048, 2048, 2.5]
 };
 exports.amountList = keys(amountMap);
-query.amount = amountMap[query.amount] ? query.amount : '524k';
+query.amount = amountMap[query.amount] ? query.amount : '131k';
 var amountInfo = amountMap[query.amount];
 
 

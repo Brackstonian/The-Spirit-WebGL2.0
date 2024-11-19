@@ -1,5 +1,6 @@
 var THREE = window.THREE
 var fboHelper = require('../fboHelper');
+var settings = require('../../core/settings');
 var merge = require('mout/object/merge');
 
 var undef;
@@ -33,17 +34,16 @@ exports.scene = undef;
 exports.camera = undef;
 
 function init(renderer, scene, camera) {
-
-    fromRenderTarget = exports.fromRenderTarget = fboHelper.createRenderTarget();
-    toRenderTarget = exports.toRenderTarget = fboHelper.createRenderTarget();
+    fromRenderTarget = exports.fromRenderTarget = fboHelper.createRenderTarget(undefined, undefined, THREE.RGBAFormat);
+    toRenderTarget = exports.toRenderTarget = fboHelper.createRenderTarget(undefined, undefined, THREE.RGBAFormat);
 
     resolution = exports.resolution = new THREE.Vector2();
 
     exports.renderer = renderer;
     exports.scene = scene;
     exports.camera = camera;
-
 }
+
 
 function resize(width, height) {
 	
@@ -68,17 +68,18 @@ function _filterQueue(effect) {
 function renderQueue(dt) {
     var renderableQueue = queue.filter(_filterQueue);
 
-    if(renderableQueue.length) {
-
+    if (renderableQueue.length) {
         toRenderTarget.depthBuffer = true;
         toRenderTarget.stencilBuffer = true;
-		
-		exports.renderer.setRenderTarget(toRenderTarget);
-        exports.renderer.render( exports.scene, exports.camera );
-		exports.renderer.setRenderTarget(null);
-		
-        // toRenderTarget.depthBuffer = false;
-        // toRenderTarget.stencilBuffer = false;
+
+        // Set clear color with full transparency
+        exports.renderer.setClearColor(new THREE.Color(settings.bgColor), settings.bgOpacity);
+        exports.renderer.setRenderTarget(toRenderTarget);
+        exports.renderer.clear();
+
+        exports.renderer.render(exports.scene, exports.camera);
+        exports.renderer.setRenderTarget(null);
+
         swapRenderTarget();
 
         var effect;
@@ -86,12 +87,14 @@ function renderQueue(dt) {
             effect = renderableQueue[i];
             effect.render(dt, fromRenderTarget, i === len - 1);
         }
-
     } else {
-        exports.renderer.render( exports.scene, exports.camera );
+        // Render directly to the screen if no effects
+        exports.renderer.setClearColor(new THREE.Color(settings.bgColor), settings.bgOpacity);
+        exports.renderer.render(exports.scene, exports.camera);
     }
-
 }
+
+
 
 function renderScene(renderTarget, scene, camera) {
     scene = scene || exports.scene;
@@ -130,7 +133,7 @@ function getRenderTarget(bitShift, isRGBA) {
         renderTarget = list.pop();
         merge(renderTarget, _renderTargetDefaultState);
     } else {
-        renderTarget = fboHelper.createRenderTarget(width, height, isRGBA ? THREE.RGBAFormat : THREE.RGBFormat);
+        renderTarget = fboHelper.createRenderTarget(width, height, THREE.RGBAFormat);
         renderTarget._listId = id;
         _renderTargetCounts[id] = _renderTargetCounts[id] || 0;
     }

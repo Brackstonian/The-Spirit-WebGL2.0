@@ -1,6 +1,6 @@
 var THREE = window.THREE
 var glslify = require('glslify');
-
+var settings = require('../core/settings');
 var undef;
 
 
@@ -59,29 +59,34 @@ function copy(inputTexture, ouputTexture) {
 }
 function render(material, renderTarget) {
     _mesh.material = material;
-    if(renderTarget) {
-		_renderer.setRenderTarget(renderTarget);
-        _renderer.render( _scene, _camera );
-		_renderer.setRenderTarget(null);
+
+    if (renderTarget) {
+        _renderer.setRenderTarget(renderTarget);
+        _renderer.setClearColor(new THREE.Color(settings.bgColor), settings.bgOpacity); // Ensure clear color and alpha
+        _renderer.clear(); // Clear the target before rendering
+        _renderer.render(_scene, _camera);
+        _renderer.setRenderTarget(null);
     } else {
-        _renderer.render( _scene, _camera );
+        _renderer.render(_scene, _camera);
     }
 }
 
+
 function createRenderTarget(width, height, format, type, minFilter, magFilter) {
     var renderTarget = new THREE.WebGLRenderTarget(width || 1, height || 1, {
-        format: format || THREE.RGBFormat,
-        type: type || THREE.UnsignedByteType,
-        minFilter: minFilter || THREE.LinearFilter,
-        magFilter: magFilter || THREE.LinearFilter,
-        // depthBuffer: false,
-        // stencilBuffer: false
+        format: THREE.RGBAFormat, // RGBA for transparency
+        type: THREE.UnsignedByteType,
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        depthBuffer: true,
+        stencilBuffer: false,
     });
 
-    renderTarget.texture.generateMipMaps = false;
+    renderTarget.texture.generateMipmaps = false;
 
     return renderTarget;
 }
+
 
 function getColorState() {
     return {

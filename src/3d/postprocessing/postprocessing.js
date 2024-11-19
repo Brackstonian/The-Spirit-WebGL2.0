@@ -43,11 +43,13 @@ function resize(width, height) {
 
 
 function render(dt) {
+    // Clear the renderer with transparency before rendering
+    _renderer.setClearColor(new THREE.Color('#FE75CA'), 0.0);
+    _renderer.clear();
 
     effectComposer.renderQueue(dt);
 
-    if(exports.visualizeTarget) {
+    if (exports.visualizeTarget) {
         fboHelper.copy(exports.visualizeTarget);
     }
-
 }

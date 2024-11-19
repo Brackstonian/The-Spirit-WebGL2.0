@@ -74,7 +74,7 @@ function init(externalTHREE, container) {
 
     _renderer = new THREE.WebGLRenderer({
         antialias: true,
-        alpha: true
+        alpha: true, 
     });
     _renderer.setClearColor(settings.bgColor, settings.bgOpacity);
     _renderer.shadowMap.enabled = true;
