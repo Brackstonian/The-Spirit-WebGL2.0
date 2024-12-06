@@ -146,7 +146,16 @@ const patterns = {
         new THREE.Vector3(-242.26, -99.97, -37.17),
         new THREE.Vector3(-167.64, -99.97, -35.59),
         new THREE.Vector3(-79.73, -99.97, -42.49),
-    ]
+    ],
+    bounce: [
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(-38.471288714594266, 38.471288714594266, -3.3205917249199564),
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(55.08799557723546, -55.08799557723546, 0.25543013268615056),
+    ],
+    still: [
+        new THREE.Vector3(0, 0, 0),
+    ],
 };
 
 module.exports = patterns; // Export the patterns object

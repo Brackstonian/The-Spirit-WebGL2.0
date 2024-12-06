@@ -11,8 +11,8 @@ void main() {
 
   vec4 color = texture2D( u_texture, v_uv );
 
-  vec2 center = u_resolution * 0.5;
-  float vignette = length( v_uv - vec2(0.5) ) * u_aspect;
+  vec2 center = u_resolution * 1;
+  float vignette = length( v_uv - vec2(1) ) * u_aspect;
   vignette = u_boost - vignette * u_reduction;
 
   color.rgb *= vignette;

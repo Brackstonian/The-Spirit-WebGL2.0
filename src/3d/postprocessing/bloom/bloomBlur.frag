@@ -25,6 +25,6 @@ void main()
     color += texture2D( u_texture,  v_uv - delta ).rgb * 0.051;
     color += texture2D( u_texture,  v_uv + delta ).rgb * 0.051;
 
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, 0.5);
 
 }

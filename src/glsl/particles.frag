@@ -17,7 +17,7 @@ void main() {
 
 	outgoingLight = pow( outgoingLight, vec3( 1.0 / 2.2 ) );
 
-    gl_FragColor = vec4( outgoingLight, 0.1 );
+    gl_FragColor = vec4( outgoingLight, 1.0 );
 	
 	#include <fog_fragment>
 }

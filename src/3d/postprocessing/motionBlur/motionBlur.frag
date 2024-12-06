@@ -13,7 +13,7 @@ void main() {
     vec3 color = (base.rgb + lines.rgb * u_lineAlphaMultiplier) / (lines.a * u_lineAlphaMultiplier + 1.0);
 
     // Preserve the alpha from the base texture, modulated by the line's alpha multiplier
-    float alpha = base.a * (1.0 - lines.a * u_lineAlphaMultiplier);
+    float alpha = base.a * (0.75 - lines.a * u_lineAlphaMultiplier);
 
     // Output the final color and alpha
     gl_FragColor = vec4(color, alpha);
