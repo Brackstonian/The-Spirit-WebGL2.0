@@ -17,7 +17,6 @@ exports.updateBloomAmount = updateBloomAmount;
 
 exports.blurRadius = 5;
 exports.amount = settings.bloomAmount;
-console.log(settings.bloomAmount);
 
 var _blurMaterial;
 

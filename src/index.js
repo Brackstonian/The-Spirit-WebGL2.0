@@ -227,7 +227,6 @@ function takeScreenshot(blurAmount = 0.5) {
         console.error("Postprocessing composer not found!");
     }
     const screenshotData = _renderer.domElement.toDataURL('image/png');
-    console.log("🚀 ~ takeScreenshot ~ screenshotData:", screenshotData)
 
 
     return screenshotData;
