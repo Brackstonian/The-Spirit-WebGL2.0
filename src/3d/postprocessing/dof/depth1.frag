@@ -5,6 +5,6 @@ uniform sampler2D u_distance;
 
 void main() {
 
-    gl_FragColor = vec4(texture2D( u_distance, (u_mouse + 0.3) * 0.5).a, 0.0, 0.0, 0.2);
+    gl_FragColor = vec4(texture2D( u_distance, (u_mouse + 0.3) * 0.5).a, 0.0, 0.0, 1.0);
 
 }

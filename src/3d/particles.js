@@ -113,7 +113,8 @@ function _createTriangleMesh(orbIndex, color1, color2) {
                 color1: { type: 'c', value: color1 },
                 color2: { type: 'c', value: color2 },
                 orbIndex: { type: 'i', value: orbIndex },
-                cameraMatrix: { type: 'm4', value: undef }
+                cameraMatrix: { type: 'm4', value: undef },
+                shadowIntensity: { type: 'f', value: 0.5 },
             }
         ]),
         vertexShader: shaderParse(glslify('../glsl/triangles.vert')),
@@ -128,6 +129,7 @@ function _createTriangleMesh(orbIndex, color1, color2) {
     material.uniforms.color2.value = color2;
     material.uniforms.orbIndex.value = orbIndex;
     material.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
+    material.uniforms.shadowIntensity.value = 0.8;
 
     var mesh = new THREE.Mesh(geometry, material);
     mesh.customDistanceMaterial = new THREE.ShaderMaterial( {

@@ -24,7 +24,7 @@ void main() {
     }
 
     float threshold = v_depth * step(0.0001, motion.z);
-    alpha *= max(0.5 - u_depthTest, smoothstep(threshold - u_depthBias, threshold, motion.z));
+    alpha *= max(1.0 - u_depthTest, smoothstep(threshold - u_depthBias, threshold, motion.z));
 
     gl_FragColor = vec4( v_color * alpha, alpha );
 
