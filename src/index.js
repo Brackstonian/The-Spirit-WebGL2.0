@@ -221,11 +221,6 @@ function _onKeyUp(evt) {
 }
 
 function takeScreenshot(blurAmount = 0.5) {
-    if (postprocessing.composer) {
-        postprocessing.composer.render();
-    } else {
-        console.error("Postprocessing composer not found!");
-    }
     const screenshotData = _renderer.domElement.toDataURL('image/png');
 
 
