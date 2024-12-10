@@ -216,7 +216,7 @@ function logPatternPoints() {
 function _onKeyUp(evt) {
     if (evt.key === 'p') {
         // window.addEventListener('mousedown', _onMouseDown);
-        takeScreenshot();
+        // takeScreenshot();
     }
 }
 
@@ -227,24 +227,10 @@ function takeScreenshot(blurAmount = 0.5) {
         console.error("Postprocessing composer not found!");
     }
     const screenshotData = _renderer.domElement.toDataURL('image/png');
+    console.log("🚀 ~ takeScreenshot ~ screenshotData:", screenshotData)
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
 
-    canvas.width = _renderer.domElement.width;
-    canvas.height = _renderer.domElement.height;
-
-    const img = new Image();
-    img.src = screenshotData;
-
-    img.onload = function () {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.style.filter = `blur(${blurAmount}px)`;
-        var a = document.createElement('a');
-        a.href = canvas.toDataURL().replace("image/png", "image/octet-stream");
-        a.download = 'gtr-screenshot.png'
-        a.click();
-    };
+    return screenshotData;
 }
 
 function _bindTouch(func) {
