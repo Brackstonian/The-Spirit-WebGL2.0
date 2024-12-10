@@ -29,8 +29,8 @@ exports.leaning = 0.5;
 exports.jitter = 0;
 exports.opacity = 1;
 exports.depthBias = 0.002;
-exports.depthTest = false;
-exports.useDithering = false;
+exports.depthTest = true;
+exports.useDithering = true;
 
 exports.motionRenderTargetScale = 1;
 exports.linesRenderTargetScale = 1 / 2;
