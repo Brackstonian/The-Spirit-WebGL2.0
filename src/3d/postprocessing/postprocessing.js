@@ -29,7 +29,7 @@ function init(renderer, scene, camera) {
     fxaa.init();
     effectComposer.queue.push(fxaa);
 
-    motionBlur.init();
+    motionBlur.init(500);
     effectComposer.queue.push(motionBlur);
 
     bloom.init();

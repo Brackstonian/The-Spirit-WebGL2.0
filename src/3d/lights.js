@@ -23,11 +23,11 @@ function init() {
     pointLight = exports.pointLight = new THREE.PointLight(0xffffff, _currentIntensity, 2048);
     pointLight.position.set(0, 500, 0); // Adjust position if needed
     pointLight.castShadow = true; // Enable shadows
-    pointLight.shadow.mapSize.width = 2048;
-    pointLight.shadow.mapSize.height = 1024;
-    pointLight.shadow.camera.near = 10;
-    pointLight.shadow.camera.far = 700;
-    pointLight.shadow.bias = -0.001;
+    pointLight.shadow.mapSize.width = 4096;
+    pointLight.shadow.mapSize.height = 4096;
+    pointLight.shadow.camera.near = 1;
+    pointLight.shadow.camera.far = 500;
+    pointLight.shadow.bias = -0.0001;
     mesh.add(pointLight);
 
     // Add two directional lights with lower intensity for balanced lighting

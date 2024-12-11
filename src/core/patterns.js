@@ -104,9 +104,6 @@ const patterns = {
         new THREE.Vector3(-98.02, -100.05, 61.59),
         new THREE.Vector3(-61.58, -96.74, -22.03),        
     ],
-    still: [
-        new THREE.Vector3(0, 0, 0),
-    ],
     penis: [
         new THREE.Vector3(-92.09, -99.82, -228.18),
         new THREE.Vector3(-42.26, -99.86, -177.48),
@@ -154,7 +151,10 @@ const patterns = {
         new THREE.Vector3(55.08799557723546, -55.08799557723546, 0.25543013268615056),
     ],
     still: [
-        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, -25, 0),
+    ],
+    zoom: [
+        new THREE.Vector3(175, 160, 0),
     ],
 };
 

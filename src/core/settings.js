@@ -11,7 +11,7 @@ var amountMap = {
     '65k': [256, 256, 2.5],
     '131k': [512, 256, 0.85],
     '252k': [512, 512, 1.2],
-    '524k': [1024, 512,2.5],
+    '524k': [64, 1024, 0.5],
     '1m': [1024, 1024, 1.6],
     '2m': [2048, 1024, 2],
     '4m': [2048, 2048, 2.5]
@@ -63,7 +63,7 @@ var motionBlurQualityMap = exports.motionBlurQualityMap = {
     low: 0.25
 };
 exports.motionBlurQualityList = keys(motionBlurQualityMap);
-query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'best';
+query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
 exports.motionBlur = true;
-exports.motionBlurPause = true;
+exports.motionBlurPause = false;
 exports.bloom = true;

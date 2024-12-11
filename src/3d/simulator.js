@@ -20,6 +20,10 @@ var positionRenderTargets2 = []; // Array for secondary render targets (for swap
 var followPoints = []; // Array to hold follow points
 exports.followPoints = followPoints;
 var followPointTimes = []; // Array to hold time for each follow point
+
+var followPointStates = []; // Array to hold states for each follow point
+exports.followPointStates = followPointStates;
+
 var pointDistance = 150; // Set the distance between follow points
 
 var TEXTURE_WIDTH = exports.TEXTURE_WIDTH = settings.simulatorTextureWidth;
@@ -32,13 +36,25 @@ exports.initAnimation = 0;
 
 exports.positionRenderTarget = [];
 
-var currentPattern = settings.pattern; // this is an array  ['default', 'spiral'];
+var currentPattern = settings.pattern; // This is an array ['default', 'spiral']
 
 exports.setPattern = (patternInput) => {
     if (Array.isArray(patternInput)) {
-        currentPattern = patternInput.filter(patternName => patterns[patternName]);
+        const validPatterns = patternInput.filter(patternName => patterns[patternName]);
+        currentPattern = validPatterns;
+
+        // Start transition for all follow points
+        followPointStates.forEach(state => {
+            state.transitioning = true;
+            state.transitionProgress = 0;
+        });
     } else if (patterns[patternInput]) {
         currentPattern = [patternInput];
+
+        followPointStates.forEach(state => {
+            state.transitioning = true;
+            state.transitionProgress = 0;
+        });
     }
 };
 
@@ -47,6 +63,11 @@ function addFollowPoint() {
     var newPoint = new THREE.Vector3();
     followPoints.push(newPoint);
     followPointTimes.push(0); // Initialize time for the new follow point
+    followPointStates.push({
+        currentPatternIndex: 0,
+        transitionProgress: 0,
+        transitioning: false
+    });
 }
 
 // Modified init function to initialize multiple follow points and shaders
@@ -107,7 +128,6 @@ function init(renderer, numOrbs = 2) {
         positionShaders.push(newShader);
         _scene.add(_mesh);
 
-
         const renderTarget = new THREE.WebGLRenderTarget(TEXTURE_WIDTH, TEXTURE_HEIGHT, {
             wrapS: THREE.ClampToEdgeWrapping,
             wrapT: THREE.ClampToEdgeWrapping,
@@ -119,13 +139,12 @@ function init(renderer, numOrbs = 2) {
             depthBuffer: false,
             stencilBuffer: false
         });
-        
+
         const renderTarget2 = renderTarget.clone();
         positionRenderTargets.push(renderTarget);
         positionRenderTargets2.push(renderTarget2);
 
         exports.positionRenderTargets = positionRenderTargets;
-
 
         const texture = _createPositionTexture();
         _copyTexture(texture, renderTarget);
@@ -196,38 +215,64 @@ function update(dt) {
     _renderer.autoClearColor = false;
 
     followPoints.forEach((point, index) => {
-        positionShaders[index].uniforms.mouse3d.value.copy(point);
-        positionShaders[index].uniforms.speed.value = settings.speed[index];
-        positionShaders[index].uniforms.dieSpeed.value = settings.dieSpeed[index];
-        positionShaders[index].uniforms.radius.value = settings.radius[index];
-        positionShaders[index].uniforms.curlSize.value = settings.curlSize[index];
-        positionShaders[index].uniforms.attraction.value = settings.attraction[index];
-        positionShaders[index].uniforms.initAnimation.value = exports.initAnimation;
+        const state = followPointStates[index];
+        const shader = positionShaders[index];
+
+        shader.uniforms.speed.value = settings.speed[index];
+        shader.uniforms.dieSpeed.value = settings.dieSpeed[index];
+        shader.uniforms.radius.value = settings.radius[index];
+        shader.uniforms.curlSize.value = settings.curlSize[index];
+        shader.uniforms.attraction.value = settings.attraction[index];
+        shader.uniforms.initAnimation.value = exports.initAnimation;
 
         if (settings.followMouse[index]) {
-            positionShaders[index].uniforms.mouse3d.value.copy(settings.mouse3d);
+            // If following the mouse, copy the mouse position directly
+            shader.uniforms.mouse3d.value.copy(settings.mouse3d);
         } else {
-            followPointTimes[index] += dt * 0.001 * settings.speed[index];
-            const pattern = patterns[currentPattern[index]] || patterns.default;
-            const segmentIndex = Math.floor(followPointTimes[index] % pattern.length);
-            const nextSegmentIndex = (segmentIndex + 1) % pattern.length;
-        
-            const startPoint = pattern[segmentIndex];
-            const endPoint = pattern[nextSegmentIndex];
-        
-            const t = followPointTimes[index] % 1; // Interpolation factor
-            point.lerpVectors(startPoint, endPoint, t);
-        
-            followPointTimes[index] += dt * 0.001 * settings.speed[index];
+            // Handle transition between patterns
+            if (state.transitioning) {
+                const targetPattern = patterns[currentPattern[index]] || patterns.default;
+                const targetStartPoint = targetPattern[0];
 
+                state.transitionProgress += dt * 0.001 * (settings.transitionSpeed || 1);
+                if (state.transitionProgress >= 1) {
+                    state.transitioning = false;
+                    state.currentPatternIndex = 0;
+                    point.copy(targetStartPoint);
+                    followPointTimes[index] = 0; // Reset time for the new pattern
+                } else {
+                    // Interpolate between the current position and the starting point of the new pattern
+                    point.lerpVectors(point, targetStartPoint, state.transitionProgress);
+                }
+            } else {
+                // Normal pattern animation
+                const pattern = patterns[currentPattern[index]] || patterns.default;
+                const patternLength = pattern.length;
+                const totalTime = patternLength; // Assuming each segment takes 1 unit of time
+                const time = followPointTimes[index] % totalTime;
+                const segmentIndex = Math.floor(time);
+                const nextSegmentIndex = (segmentIndex + 1) % patternLength;
+
+                const startPoint = pattern[segmentIndex];
+                const endPoint = pattern[nextSegmentIndex];
+
+                const t = time - segmentIndex; // Interpolation factor between 0 and 1
+                point.lerpVectors(startPoint, endPoint, t);
+
+                followPointTimes[index] += dt * 0.001 * settings.speed[index];
+            }
+
+            // Adjust position based on orb index and settings
             if (currentPattern[0] === currentPattern[1] && settings.orbDisplay[0] === settings.orbDisplay[1]) {
                 point.z -= (pointDistance / 2);
             }
 
-
             if (index === 1 && currentPattern[0] === currentPattern[1]) {
                 point.z += pointDistance;
             }
+
+            // Update shader uniform with the new position
+            shader.uniforms.mouse3d.value.copy(point);
         }
     });
 

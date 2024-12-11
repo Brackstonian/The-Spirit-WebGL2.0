@@ -20,8 +20,8 @@ exports.useSampling = false;
 exports.skipMatrixUpdate = false;
 
 exports.fadeStrength = 1;
-exports.motionMultiplier = 1;
-exports.maxDistance = 100;
+exports.motionMultiplier = 15;
+exports.maxDistance = 300;
 exports.targetFPS = 60;
 exports.leaning = 0.5;
 
@@ -29,8 +29,8 @@ exports.leaning = 0.5;
 exports.jitter = 0;
 exports.opacity = 1;
 exports.depthBias = 0.002;
-exports.depthTest = true;
-exports.useDithering = true;
+exports.depthTest = false;
+exports.useDithering = false;
 
 exports.motionRenderTargetScale = 1;
 exports.linesRenderTargetScale = 1 / 2;

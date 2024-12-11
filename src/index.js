@@ -302,7 +302,7 @@ function _render(dt, newTime) {
     ratio = math.unLerp(0.5, 0.6, _initAnimation);
 
     fxaa.enabled = !!settings.fxaa;
-    motionBlur.enabled = !!settings.motionBlur;
+    motionBlur.enabled = true;
     bloom.enabled = !!settings.bloom;
 
     postprocessing.render(dt, newTime);
