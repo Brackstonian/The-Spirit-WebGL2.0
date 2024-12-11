@@ -154,7 +154,7 @@ const patterns = {
         new THREE.Vector3(0, -25, 0),
     ],
     zoom: [
-        new THREE.Vector3(175, 160, 0),
+        new THREE.Vector3(175, 50, 0),
     ],
 };
 
