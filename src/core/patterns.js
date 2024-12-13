@@ -156,6 +156,11 @@ const patterns = {
     zoom: [
         new THREE.Vector3(175, 50, 0),
     ],
+    zoomBounce: [
+        new THREE.Vector3(175, -20, 0),
+        new THREE.Vector3(175, 50, 0),
+        new THREE.Vector3(175, 80, 0),
+    ],
 };
 
 module.exports = patterns; // Export the patterns object
