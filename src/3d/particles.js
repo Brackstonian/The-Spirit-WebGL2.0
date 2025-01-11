@@ -182,6 +182,15 @@ function _createTriangleMesh(orbIndex, color1, color2) {
 
 function update(dt) {
     _meshes.forEach((mesh, index) => {
+        // Check if the orb display is enabled for this index
+        if (!settings.orbDisplay[index]) {
+            mesh.visible = false; // Ensure the mesh is hidden
+            return; // Skip processing this mesh
+        }
+
+        // If orbDisplay is true, ensure the mesh is visible
+        mesh.visible = true;
+
         // Get texture for each orb if available
         const renderTarget = simulator.positionRenderTargets[index];
         const texture = renderTarget ? renderTarget.texture : null;
@@ -190,8 +199,6 @@ function update(dt) {
             console.warn(`Missing texture for orb at index ${index}`);
             return; // Skip this orb if texture is missing
         }
-
-        mesh.visible = settings.orbDisplay[index];
 
         // Update colors dynamically
         const color1Setting = settings.color1[index] || _color1[index].getStyle();
@@ -206,13 +213,15 @@ function update(dt) {
         mesh.material.uniforms.color2.value = _color2[index];
 
         // Set the correct texture positions for each orb
-        mesh.material.uniforms.texturePosition.value = simulator.positionRenderTargets[index].texture;
-        mesh.customDistanceMaterial.uniforms.texturePosition.value = simulator.positionRenderTargets[index].texture;
-		mesh.motionMaterial.uniforms.texturePosition.value = simulator.positionRenderTargets[index].texture;
-        if(mesh.material.uniforms.flipRatio ) {
+        mesh.material.uniforms.texturePosition.value = texture;
+        mesh.customDistanceMaterial.uniforms.texturePosition.value = texture;
+        mesh.motionMaterial.uniforms.texturePosition.value = texture;
+
+        if (mesh.material.uniforms.flipRatio) {
             mesh.material.uniforms.flipRatio.value ^= 1;
             mesh.customDistanceMaterial.uniforms.flipRatio.value ^= 1;
             mesh.motionMaterial.uniforms.flipRatio.value ^= 1;
         }
     });
 }
+
