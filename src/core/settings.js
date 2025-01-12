@@ -5,13 +5,13 @@ var query = exports.query = parse(window.location.href.replace('#', '?'));
 // Texture/Resolution settings
 var amountMap = {
     '4k' : [64, 64, 0.29],
-    '8k' : [128, 64, 0.42],
-    '16k' : [128, 128, 0.48],
-    '32k' : [256, 128, 0.55],
-    '65k' : [256, 256, 0.6],
-    '131k' : [512, 256, 0.85],
-    '252k' : [512, 512, 1.2],
-    '524k' : [1024, 512, 1.4],
+    '8k' : [64, 64, 0.42],
+    '16k' : [64, 128, 0.48],
+    '32k' : [64, 128, 0.55],
+    '65k' : [64, 256, 0.6],
+    '131k' : [64, 256, 0.85],
+    '252k' : [64, 512, 1.2],
+    '524k': [64, 1024, 0.5],
 };
 
 exports.amountList = keys(amountMap);
@@ -66,7 +66,6 @@ const deviceCategory = detectDeviceCategory();
 const bestAmount = getResolutionByDevice(deviceCategory);
 query.amount = amountMap[query.amount] ? query.amount : bestAmount;
 var amountInfo = amountMap[query.amount];
-console.log(`🚀 Detected Device: ${deviceCategory}, Amount Info:`, amountInfo);
 
 exports.simulatorTextureWidth = amountInfo[0];
 exports.simulatorTextureHeight = amountInfo[1];
