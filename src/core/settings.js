@@ -57,7 +57,7 @@ function getResolutionByDevice(deviceCategory) {
         case 'android-high': return '32k';
         case 'laptop': return '16k';
         case 'desktop-low': return '32k';
-        case 'desktop-high': return '131k';
+        case 'desktop-high': return '524k';
         default: return '4k';
     }
 }
