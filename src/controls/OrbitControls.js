@@ -1,4 +1,4 @@
-//var THREE = window.THREE
+// import THREE from '../utils/three.js';
 
 /**
  * @author qiao / https://github.com/qiao

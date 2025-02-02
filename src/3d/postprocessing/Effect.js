@@ -1,4 +1,5 @@
-var THREE = window.THREE
+import THREE from '../../utils/three';
+
 var effectComposer = require('./effectComposer');
 var fboHelper = require('../fboHelper');
 var merge = require('mout/object/merge');

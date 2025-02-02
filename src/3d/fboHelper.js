@@ -1,4 +1,4 @@
-var THREE = window.THREE
+import THREE from '../utils/three';
 var glslify = require('glslify');
 var settings = require('../core/settings');
 var undef;

@@ -1,4 +1,5 @@
-var THREE = window.THREE
+import THREE from '../../utils/three.js';
+
 var fboHelper = require('../fboHelper');
 var settings = require('../../core/settings');
 var merge = require('mout/object/merge');

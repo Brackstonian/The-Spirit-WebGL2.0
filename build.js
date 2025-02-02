@@ -19,20 +19,24 @@ function runBuild(f) {
     console.log('Bundling', f);
     var b = browserify('src/' + f, {
       debug: false,
-      standalone: 'spiritWebgl'
+      standalone: 'spiritWebgl',
     });
-    b.plugin(require('bundle-collapser/plugin'));
-    b.exclude('three');
+
+    b.transform('babelify', {
+      presets: ['@babel/preset-env'],
+    });
+
     var transforms = [['glslify', { global: true }]];
     transforms.forEach(function (t) {
       b.transform(t);
     });
+
     b.bundle(function (err, src) {
       if (err) return reject(err);
       console.log('Compressing', f);
       var result = UglifyJS.minify(src.toString(), {
-        compress: true,
-        mangle: true
+        compress: false,
+        mangle: false
       });
       if (result.error) return reject(result.error);
       console.log('Writing', f);
@@ -46,6 +50,8 @@ function runBuild(f) {
     });
   });
 }
+
+
 
 const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
 

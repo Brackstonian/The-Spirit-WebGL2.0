@@ -1,9 +1,10 @@
+import THREE from '../../../utils/three';
+
 var Effect = require('../Effect');
 var effectComposer = require('../effectComposer');
 var fboHelper = require('../../fboHelper');
 
 var glslify = require('glslify');
-var THREE = window.THREE
 
 var undef;
 
@@ -19,8 +20,8 @@ exports.useSampling = false;
 // for debug
 exports.skipMatrixUpdate = false;
 
-exports.fadeStrength = 1;
-exports.motionMultiplier = 15;
+exports.fadeStrength = 2;
+exports.motionMultiplier = 500;
 exports.maxDistance = 300;
 exports.targetFPS = 60;
 exports.leaning = 0.5;
@@ -124,7 +125,7 @@ function init(sampleCount) {
             u_leaning: { type: 'f', value: 0.5 }
         },
         defines: {
-            SAMPLE_COUNT: sampleCount || 21
+            SAMPLE_COUNT:  Math.min(sampleCount || 21, 64)
         },
         vertexShader: this.material.vertexShader,
         fragmentShader: fboHelper.rawShaderPrefix + '#define SAMPLE_COUNT ' + (sampleCount || 21) + '\n' + glslify('./motionBlurSampling.frag')
@@ -193,63 +194,56 @@ function _getDitheringAmount(width, height) {
 }
 
 function render(dt, renderTarget, toScreen) {
-
-    if(_prevUseDithering !== exports.useDithering) {
-        resize();
-    } else if(_prevUseSampling !== exports.useSampling) {
+    if (_prevUseDithering !== exports.useDithering || _prevUseSampling !== exports.useSampling) {
         resize();
     }
 
-    var useSampling = exports.useSampling;
-    var fpsRatio = 1000 / (dt < 16.667 ? 16.667 : dt) / exports.targetFPS;
+    const fpsRatio = Math.min(1000 / Math.max(dt, 16.667), exports.targetFPS) / exports.targetFPS;
 
-    var state = fboHelper.getColorState();
-    effectComposer.renderer.setClearColor(0, 1);
-    effectComposer.renderer.setRenderTarget(_motionRenderTarget);
-	effectComposer.renderer.clear();
-	effectComposer.renderer.setRenderTarget(null);
-	
-     effectComposer.scene.traverseVisible(_setObjectBeforeState);
-     effectComposer.renderScene(_motionRenderTarget);
-     for(var i = 0, len = _visibleCache.length; i < len; i++) {
-		 _setObjectAfterState(_visibleCache[i]);
-     }
-     _visibleCache = [];
+    // Prepare motion render target
+    _prepareMotionRenderTarget();
 
-    if(!useSampling) {
-        _linesMaterial.uniforms.u_maxDistance.value = exports.maxDistance;
-        _linesMaterial.uniforms.u_jitter.value = exports.jitter;
-        _linesMaterial.uniforms.u_fadeStrength.value = exports.fadeStrength;
-        _linesMaterial.uniforms.u_motionMultiplier.value = exports.motionMultiplier * fpsRatio;
-        _linesMaterial.uniforms.u_depthTest.value = exports.depthTest;
-        _linesMaterial.uniforms.u_opacity.value = exports.opacity;
-        _linesMaterial.uniforms.u_leaning.value = Math.max(0.001, Math.min(0.999, exports.leaning));
-        _linesMaterial.uniforms.u_depthBias.value = Math.max(0.00001, exports.depthBias);
-        _linesMaterial.uniforms.u_texture.value = renderTarget.texture;
-
-        effectComposer.renderer.setClearColor(0, 0);
-        effectComposer.renderer.setRenderTarget(_linesRenderTarget);
-		effectComposer.renderer.clear();
-        effectComposer.renderer.render(_linesScene, _linesCamera);
-		effectComposer.renderer.setRenderTarget(null);
+    if (!exports.useSampling) {
+        _updateLinesMaterialUniforms(fpsRatio, renderTarget);
+        _renderLines();
     }
 
-    fboHelper.setColorState(state);
-
-    if(useSampling) {
-        _samplingMaterial.uniforms.u_maxDistance.value = exports.maxDistance;
-        _samplingMaterial.uniforms.u_fadeStrength.value = exports.fadeStrength;
-        _samplingMaterial.uniforms.u_motionMultiplier.value = exports.motionMultiplier * fpsRatio;
-        _samplingMaterial.uniforms.u_leaning.value = Math.max(0.001, Math.min(0.999, exports.leaning));
-        _samplingMaterial.uniforms.u_texture.value = renderTarget.texture;
-
-        effectComposer.render(_samplingMaterial, toScreen);
+    // Final compositing
+    if (exports.useSampling) {
+        _renderWithSampling(renderTarget, toScreen, fpsRatio);
     } else {
         this.uniforms.u_lineAlphaMultiplier.value = 1 + exports.useDithering;
         _super.render.call(this, dt, renderTarget, toScreen);
     }
-
 }
+
+function _prepareMotionRenderTarget() {
+    const state = fboHelper.getColorState();
+    effectComposer.renderer.setClearColor(0, 1);
+    effectComposer.renderer.setRenderTarget(_motionRenderTarget);
+    effectComposer.renderer.clear();
+    effectComposer.renderer.setRenderTarget(null);
+
+    effectComposer.scene.traverseVisible(_setObjectBeforeState);
+    effectComposer.renderScene(_motionRenderTarget);
+    _visibleCache.forEach(_setObjectAfterState);
+    _visibleCache = [];
+}
+
+function _updateLinesMaterialUniforms(fpsRatio, renderTarget) {
+    Object.assign(_linesMaterial.uniforms, {
+        u_maxDistance: { value: exports.maxDistance },
+        u_jitter: { value: exports.jitter },
+        u_fadeStrength: { value: exports.fadeStrength },
+        u_motionMultiplier: { value: exports.motionMultiplier * fpsRatio },
+        u_depthTest: { value: exports.depthTest },
+        u_opacity: { value: exports.opacity },
+        u_leaning: { value: Math.max(0.001, Math.min(0.999, exports.leaning)) },
+        u_depthBias: { value: Math.max(0.00001, exports.depthBias) },
+        u_texture: { value: renderTarget.texture },
+    });
+}
+
 
 function _setObjectBeforeState(obj) {
     if(obj.motionMaterial) {
@@ -261,6 +255,14 @@ function _setObjectBeforeState(obj) {
     }
 
     _visibleCache.push(obj);
+}
+
+function _renderLines() {
+    effectComposer.renderer.setClearColor(0, 0); // Set clear color for the lines render
+    effectComposer.renderer.setRenderTarget(_linesRenderTarget); // Render to the lines render target
+    effectComposer.renderer.clear(); // Clear the render target
+    effectComposer.renderer.render(_linesScene, _linesCamera); // Render the lines scene using the lines camera
+    effectComposer.renderer.setRenderTarget(null); // Reset render target to the default
 }
 
 function _setObjectAfterState(obj) {

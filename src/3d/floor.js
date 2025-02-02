@@ -1,5 +1,6 @@
+import THREE from '../utils/three.js';
 var settings = require('../core/settings');
-var THREE = window.THREE
+
 
 
 var undef;

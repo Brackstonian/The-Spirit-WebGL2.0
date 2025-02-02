@@ -1,7 +1,9 @@
+import THREE from '../utils/three.js';
+
 var settings = require('../core/settings');
 const patterns = require('../core/patterns'); // Import the patterns from patterns.js
 
-var THREE = window.THREE;
+
 var glslify = require('glslify');
 var shaderParse = require('../helpers/shaderParse');
 

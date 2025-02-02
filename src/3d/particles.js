@@ -1,5 +1,5 @@
+import THREE from '../utils/three.js';
 var settings = require('../core/settings');
-var THREE = window.THREE;
 var shaderParse = require('../helpers/shaderParse');
 var glslify = require('glslify');
 var simulator = require('./simulator');

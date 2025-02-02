@@ -1,10 +1,11 @@
+import THREE from '../../../utils/three.js';
 var settings = require('../../../core/settings');
 var Effect = require('../Effect');
 var effectComposer = require('../effectComposer');
 var fboHelper = require('../../fboHelper');
 
 var glslify = require('glslify');
-var THREE = window.THREE
+
 
 var undef;
 

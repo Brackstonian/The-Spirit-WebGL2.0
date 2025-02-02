@@ -1,3 +1,5 @@
+import THREE from '../../utils/three.js';
+
 var effectComposer = require('./effectComposer');
 var fxaa = require('./fxaa/fxaa');
 var bloom = require('./bloom/bloom');

@@ -1,4 +1,5 @@
-var THREE = window.THREE
+import THREE from '../utils/three';
+
 
 var threeChunkReplaceRegExp = /\/\/\s?chunk_replace\s(.+)([\d\D]+)\/\/\s?end_chunk_replace/gm;
 var threeChunkRegExp = /\/\/\s?chunk\(\s?(\w+)\s?\);/g;

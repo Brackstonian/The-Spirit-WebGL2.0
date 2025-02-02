@@ -1,3 +1,5 @@
+import THREE from '../utils/three';
+
 const patterns = {
     default:[
         new THREE.Vector3(200.00, 60.00, 0.00),
@@ -151,15 +153,15 @@ const patterns = {
         new THREE.Vector3(55.08799557723546, -55.08799557723546, 0.25543013268615056),
     ],
     still: [
-        new THREE.Vector3(0, -25, 0),
+        new THREE.Vector3(-300, -25, 0),
     ],
     zoom: [
-        new THREE.Vector3(175, 50, 0),
+        new THREE.Vector3(-200, 50, 0),
     ],
     zoomBounce: [
-        new THREE.Vector3(175, -20, 0),
-        new THREE.Vector3(175, 50, 0),
-        new THREE.Vector3(175, 80, 0),
+        new THREE.Vector3(-200, -20, 0),
+        new THREE.Vector3(-200, 50, 0),
+        new THREE.Vector3(-200, 180, 0),
     ],
 };
 

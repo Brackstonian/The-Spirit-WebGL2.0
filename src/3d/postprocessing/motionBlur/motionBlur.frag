@@ -10,7 +10,9 @@ void main() {
     vec4 lines = texture2D(u_linesTexture, v_uv.xy);
 
     // Calculate the combined RGB color
-    vec3 color = (base.rgb + lines.rgb * u_lineAlphaMultiplier) / (lines.a * u_lineAlphaMultiplier + 1.0);
+    float combinedAlpha = lines.a * u_lineAlphaMultiplier + 1.0;
+    vec3 color = (base.rgb + lines.rgb * u_lineAlphaMultiplier) * (1.0 / combinedAlpha);
+
 
     // Preserve the alpha from the base texture, modulated by the line's alpha multiplier
     float alpha = base.a * (1.0 - lines.a * u_lineAlphaMultiplier);

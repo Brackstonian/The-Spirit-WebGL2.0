@@ -1,4 +1,5 @@
-var THREE = window.THREE
+import THREE from '../utils/three.js';
+
 var glslify = require('glslify');
 var mixIn = require('mout/object/mixIn');
 var fillIn = require('mout/object/fillIn');

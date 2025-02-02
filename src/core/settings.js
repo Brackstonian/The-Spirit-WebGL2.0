@@ -1,90 +1,64 @@
+
+// var amountMap = {
+//     '4k' : [64, 64, 0.29],
+//     '8k' : [128, 64, 0.42],
+//     '16k' : [128, 128, 0.48],
+//     '32k' : [256, 128, 0.55],
+//     '65k' : [256, 256, 0.6],
+//     '131k' : [512, 256, 0.85],
+//     '252k' : [512, 512, 1.2],
+//     '524k' : [1024, 512, 1.4],
+//     '1m' : [1024, 1024, 1.6],
+//     '2m' : [2048, 1024, 2],
+//     '4m' : [2048, 2048, 2.5]
+// };
 var parse = require('mout/queryString/parse');
 var keys = require('mout/object/keys');
 var query = exports.query = parse(window.location.href.replace('#', '?'));
 
-// Texture/Resolution settings
+var screenWidth = window.innerWidth;
+
+// Adjust settings based on screen width
+var screenCategory;
+if (screenWidth <= 394) {
+    screenCategory = 'mobile';
+} else if (screenWidth <= 768) {
+    screenCategory = 'tablet';
+} else if (screenWidth <= 1024) {
+    screenCategory = 'ipadPro';
+} else {
+    screenCategory = 'desktop';
+}
+
 var amountMap = {
-    '4k' : [64, 64, 0.29],
-    '8k' : [64, 64, 0.42],
-    '16k' : [64, 128, 0.48],
-    '32k' : [64, 128, 0.55],
-    '65k' : [64, 256, 0.6],
-    '131k' : [64, 256, 0.85],
-    '252k' : [64, 512, 1.2],
-    '524k': [64, 1024, 0.5],
+    mobile:  { amount: '65k', texture: [256, 256], radius: 0.6 },
+    tablet:  { amount: '524k', texture: [512, 128], radius: 0.6 },
+    ipadPro: { amount: '524k', texture: [1024, 512], radius: 1.2 },
+    desktop: { amount: '524k', texture: [1024, 512], radius: 1.6 }
 };
 
-exports.amountList = keys(amountMap);
+// Apply the chosen settings
+var { amount, texture, radius } = amountMap[screenCategory];
+query.amount = amount;
 
-
-function detectDeviceCategory() {
-    const ua = navigator.userAgent;
-
-    if (/iPad/i.test(ua)) {
-        if (window.devicePixelRatio >= 2 && screen.width >= 1024) {
-            return 'ipad-pro'; // iPad Pro (Gen 3+)
-        }
-        return 'ipad'; // Older iPads
-    }
-
-    if (/iPhone/i.test(ua)) {
-        return 'iphone'; // All iPhones
-    }
-
-    if (/Android/i.test(ua)) {
-        const isHighEnd = navigator.deviceMemory >= 6 || screen.width >= 1440;
-        const isMidEnd = navigator.deviceMemory >= 4 || screen.width >= 1080;
-        return isHighEnd ? 'android-high' : isMidEnd ? 'android-mid' : 'android-low';
-    }
-
-    if (/Windows|Macintosh|Linux/i.test(ua)) {
-        const isHighPerformance = navigator.deviceMemory >= 8 || screen.width >= 1440;
-        const isDesktop = /Win|Mac|Linux/.test(ua) && screen.width >= 1024;
-        return isHighPerformance && isDesktop ? 'desktop-high' : isDesktop ? 'desktop-low' : 'laptop';
-    }
-
-    return 'unknown';
-}
-
-// Map device category to resolution
-function getResolutionByDevice(deviceCategory) {
-    switch (deviceCategory) {
-        case 'iphone': return '8k';
-        case 'ipad': return '8k';
-        case 'ipad-pro': return '524k';
-        case 'android-low': return '8k';
-        case 'android-mid': return '16k';
-        case 'android-high': return '32k';
-        case 'laptop': return '16k';
-        case 'desktop-low': return '32k';
-        case 'desktop-high': return '524k';
-        default: return '4k';
-    }
-}
-
-const deviceCategory = detectDeviceCategory();
-const bestAmount = getResolutionByDevice(deviceCategory);
-query.amount = amountMap[query.amount] ? query.amount : bestAmount;
-var amountInfo = amountMap[query.amount];
-
-exports.simulatorTextureWidth = amountInfo[0];
-exports.simulatorTextureHeight = amountInfo[1];
+exports.simulatorTextureWidth = texture[0];
+exports.simulatorTextureHeight = texture[1];
 
 // Core orb behavior
 exports.orbDisplay = [false, false];
 exports.speed = [1, 10];
 exports.dieSpeed = [0.015, 0.015];
-exports.radius = [1, 1];
+exports.radius = [radius, radius];
 exports.curlSize = [0.02, 0.04];
 exports.attraction = [1, 2];
 exports.color1 = ['#6998AB', '#B1D0E0'];  // Medium blue
 exports.color2 = ['#B1D0E0', '#6998AB'];  // Light blue
-exports.pattern = ['default', 'spiral'];
+exports.pattern = ['still', 'still'];
 exports.followMouse = [true, false];
 
 // Scene settings
 exports.bgColor = '#FFFFFF';
-exports.bgOpacity = 0.5;
+exports.bgOpacity = 1;
 exports.lightIntensity = 0.1;
 
 exports.bloomAmount = 1;
@@ -94,7 +68,6 @@ exports.useStats = false;
 exports.isMobile = /(iPad|iPhone|Android)/i.test(navigator.userAgent);
 
 // Post-processing settings
-exports.fxaa = true;
 var motionBlurQualityMap = exports.motionBlurQualityMap = {
     best: 1,
     high: 0.5,
@@ -103,6 +76,9 @@ var motionBlurQualityMap = exports.motionBlurQualityMap = {
 };
 exports.motionBlurQualityList = keys(motionBlurQualityMap);
 query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
-exports.motionBlur = true;
+
+// Optimize post-processing for mobile
+exports.motionBlur = screenCategory !== 'mobile';
 exports.motionBlurPause = false;
-exports.bloom = true;
+exports.bloom = screenCategory !== 'mobile';
+exports.fxaa = screenCategory !== 'mobile';
