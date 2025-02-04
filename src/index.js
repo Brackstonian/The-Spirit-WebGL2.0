@@ -134,8 +134,12 @@ function init(container) {
     window.addEventListener('mousemove', _onMove);
     window.addEventListener('touchmove', _bindTouch(_onMove));
 
-    _time = Date.now();
     _onResize();
+}
+
+function startWebGLAnimation() {
+    console.log("Starting WebGL animation...");
+    _time = Date.now();
     _loop();
 }
 
@@ -268,5 +272,6 @@ function updateSettings(newSettings) {
 module.exports = {
     init,
     updateSettings: updateSettings,
-    takeScreenshot: takeScreenshot
+    takeScreenshot: takeScreenshot,
+    startWebGLAnimation: startWebGLAnimation
 };
