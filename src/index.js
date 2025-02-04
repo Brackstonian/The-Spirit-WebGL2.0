@@ -188,30 +188,38 @@ function _render(dt, newTime) {
     _camera.position.copy(_currentCameraPosition);
     _camera.lookAt(0, 0 ,0);
 
-    // motionBlur.skipMatrixUpdate = !(settings.dieSpeed || settings.speed) && settings.motionBlurPause;
-
-    var ratio;
     _bgColor.setStyle(settings.bgColor);
-    var tmpColor = floor.mesh.material.color;
-    tmpColor = _bgColor;
-    _scene.fog.color.copy(tmpColor);
-    _renderer.setClearColor(tmpColor.getHex(), settings.bgOpacity);
+    floor.mesh.material.color.copy(_bgColor);
+    _scene.fog.color.copy(_bgColor);
+    _renderer.setClearColor(_bgColor.getHex(), settings.bgOpacity);
 
     _initAnimation = 1;
     simulator.initAnimation = _initAnimation;
 
     lights.update(dt, _camera);
 
-
     // Floor visibility
     floor.mesh.visible = false;
 
-    // update mouse3d
+    // Update mouse3d
     _camera.updateMatrixWorld();
     _ray.origin.setFromMatrixPosition(_camera.matrixWorld);
-    _ray.direction.set(settings.mouse.x, settings.mouse.y, 0.5).unproject(_camera).sub(_ray.origin).normalize();
+    _ray.direction.set(settings.mouse.x, settings.mouse.y, 0.5)
+        .unproject(_camera)
+        .sub(_ray.origin)
+        .normalize();
+
+    if (isNaN(_ray.direction.x) || isNaN(_ray.direction.y) || isNaN(_ray.direction.z)) {
+        _ray.direction.set(0, 0, -1);
+    }
+
     var distance = _ray.origin.length() / Math.cos(Math.PI - _ray.direction.angleTo(_ray.origin));
+    if (!isFinite(distance)) {
+        distance = 100;
+    }
+
     _ray.origin.add(_ray.direction.multiplyScalar(distance * 1.0));
+
     simulator.update(dt);
     particles.update(dt);
 
@@ -223,11 +231,17 @@ function _render(dt, newTime) {
         if (_width < 580) ratio *= 0.5;
     }
 
-    ratio = math.unLerp(0.5, 0.6, _initAnimation);
+    if (typeof math.unLerp === "function") {
+        ratio = math.unLerp(0.5, 0.6, _initAnimation);
+    } else {
+        ratio = 0;
+    }
 
-    fxaa.enabled = !!settings.isMobile;
-    motionBlur.enabled = !settings.isMobile;
-    bloom.enabled = !settings.isMobile;
+    if (settings.isMobile) {
+        fxaa.enabled = false;
+        motionBlur.enabled = false;
+        bloom.enabled = false;
+    }
 
     postprocessing.render(dt, newTime);
 }
