@@ -187,6 +187,7 @@ function _render(dt, newTime) {
 
     _camera.position.copy(_currentCameraPosition);
     _camera.lookAt(0, 0 ,0);
+    let ratio;
 
     _bgColor.setStyle(settings.bgColor);
     floor.mesh.material.color.copy(_bgColor);
