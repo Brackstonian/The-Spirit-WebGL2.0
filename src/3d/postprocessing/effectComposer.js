@@ -50,12 +50,12 @@ function resize(width, height) {
 	
     resolution.set(width, height);
 
-    fromRenderTarget.setSize(width, height);
-    toRenderTarget.setSize(width, height);
+    fromRenderTarget.setSize(width, height, false);
+    toRenderTarget.setSize(width, height, false);
 
     exports.camera.aspect = width / height;
     exports.camera.updateProjectionMatrix();
-    exports.renderer.setSize(width, height);
+    exports.renderer.setSize(width, height, false);
 
     for(var i = 0, len = queue.length; i < len; i++) {
         queue[i].resize(width, height);
@@ -141,7 +141,7 @@ function getRenderTarget(bitShift, isRGBA) {
     _renderTargetCounts[id]++;
 
     if((renderTarget.width !== width) || (renderTarget.height !== height)) {
-        renderTarget.setSize(width, height);
+        renderTarget.setSize(width, height, false);
     }
 
     return renderTarget;

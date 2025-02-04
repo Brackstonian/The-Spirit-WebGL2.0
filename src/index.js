@@ -63,7 +63,7 @@ function init(container) {
     _renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
-        preserveDrawingBuffer: true,
+        preserveDrawingBuffer: false,
         powerPreference: 'low-power',
         precision: 'highp',
         // failIfMajorPerformanceCaveat: true,
@@ -73,6 +73,12 @@ function init(container) {
     _renderer.shadowMap.enabled = true;
     _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(_renderer.domElement);
+
+    _renderer.domElement.addEventListener("webglcontextlost", function (event) {
+        event.preventDefault();
+        console.warn("WebGL context lost. Reloading...");
+        location.reload();
+    });
 
     _scene = new THREE.Scene();
     _scene.fog = new THREE.FogExp2(settings.bgColor, 0.01);
@@ -165,7 +171,7 @@ function _loop() {
     let deltaTime = newTime - _time;
     _render(deltaTime, newTime);
     _time = newTime;
-    raf(_loop);
+    requestAnimationFrame(_loop);
 }
 
 
@@ -215,9 +221,9 @@ function _render(dt, newTime) {
 
     ratio = math.unLerp(0.5, 0.6, _initAnimation);
 
-    fxaa.enabled = !!settings.fxaa;
-    motionBlur.enabled = true;
-    bloom.enabled = !!settings.bloom;
+    fxaa.enabled = !!settings.isMobile;
+    motionBlur.enabled = !settings.isMobile;
+    bloom.enabled = !settings.isMobile;
 
     postprocessing.render(dt, newTime);
 }
