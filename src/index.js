@@ -1,6 +1,5 @@
 import THREE from './utils/three.js';
-
-var raf = require('raf');
+var raf = require('raf'); // if you need it, or you can just use window.requestAnimationFrame
 import settings from './core/settings';
 import math from './utils/math';
 import ease from './utils/ease';
@@ -14,8 +13,6 @@ import simulator from './3d/simulator';
 import particles from './3d/particles';
 import lights from './3d/lights';
 import floor from './3d/floor';
-
-var undef;
 
 var _width = 0;
 var _height = 0;
@@ -31,58 +28,68 @@ var _initAnimation = 0;
 
 var _bgColor;
 
-
 var _currentCameraPosition;
 var _targetCameraPosition;
 var _cameraLerpFactor = 0.05;
 
-// var motionBlur;
-// var fxaa; 
-// var bloom; 
-// var fboHelper; 
-// var simulator; 
-// var particles; 
-// var lights; 
-// var floor; 
-// var settings; 
-// var postprocessing;
-// var math;
-// var settings;
+// This local flag can mirror settings.isAnimating:
+var _animating = false;
 
 function init(container) {
-
+    // -- Moved typical checks for settings into init:
+    if (settings.isMobile === undefined) {
+        settings.isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+    if (settings.isAnimating === undefined) {
+        settings.isAnimating = true; // default
+    }
+    
     _ray = new THREE.Ray();
     _currentCameraPosition = new THREE.Vector3();
     _targetCameraPosition = new THREE.Vector3();
 
-    // Avoid requiring modules again, as they are already preloaded
     _bgColor = new THREE.Color(settings.bgColor);
     settings.mouse = new THREE.Vector2(0, 0);
     settings.mouse3d = _ray.origin;
+
+    // Adjust precision or other flags based on isMobile:
+    const precision = settings.isMobile ? 'mediump' : 'highp';
 
     _renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
         preserveDrawingBuffer: false,
         powerPreference: 'low-power',
-        precision: 'highp',
-        // failIfMajorPerformanceCaveat: true,
+        precision: precision
     });
 
+    // Limit device pixel ratio for performance on mobile
+    _renderer.setPixelRatio(Math.min(window.devicePixelRatio, settings.isMobile ? 1.0 : 2.0));
+
+    // Conditionally enable shadows
+    if (settings.isMobile) {
+        _renderer.shadowMap.enabled = false;
+    } else {
+        _renderer.shadowMap.enabled = true;
+        _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
+
+    // Set initial background
     _renderer.setClearColor(settings.bgColor, settings.bgOpacity);
-    _renderer.shadowMap.enabled = true;
-    _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(_renderer.domElement);
 
+    // WebGL context lost handler
     _renderer.domElement.addEventListener("webglcontextlost", function (event) {
         event.preventDefault();
         console.warn("WebGL context lost. Reloading...");
         location.reload();
     });
 
+    // Scene & Fog
     _scene = new THREE.Scene();
     _scene.fog = new THREE.FogExp2(settings.bgColor, 0.01);
 
+    // Camera
     _camera = new THREE.PerspectiveCamera(45, 1, 10, 3000);
     _camera.position.set(0, 200, 45);
     _camera.lookAt(0, 0, 0);
@@ -91,9 +98,11 @@ function init(container) {
     _currentCameraPosition.copy(_camera.position);
     _targetCameraPosition.copy(_camera.position);
 
+    // Store in settings
     settings.camera = _camera;
     settings.cameraPosition = _camera.position;
 
+    // Initialize other modules
     fboHelper.init(_renderer);
     postprocessing.init(_renderer, _scene, _camera);
 
@@ -109,7 +118,7 @@ function init(container) {
     floor.mesh.position.y = -100;
     _scene.add(floor.mesh);
 
-    // Apply default settings
+    // If you want some default settings:
     updateSettings({
         orbDisplay: [true, false],
         speed: [1, 0.4],
@@ -130,19 +139,34 @@ function init(container) {
         cameraTransitionSpeed: 1
     });
 
+    // Add listeners
     window.addEventListener('resize', _onResize);
     window.addEventListener('mousemove', _onMove);
     window.addEventListener('touchmove', _bindTouch(_onMove));
 
     _onResize();
+
+    // Decide if we should start animating right away
+    if (settings.isAnimating) {
+        startWebGLAnimation();
+    }
 }
 
 function startWebGLAnimation() {
     console.log("Starting WebGL animation...");
+    // Set the flag
+    _animating = true;
+    settings.isAnimating = true;
     _time = Date.now();
-    _loop();
+    requestAnimationFrame(_loop);
 }
 
+// A function to stop/pause the RAF loop
+function stopWebGLAnimation() {
+    console.log("Stopping WebGL animation...");
+    _animating = false;
+    settings.isAnimating = false;
+}
 
 function takeScreenshot() {
     const screenshotData = _renderer.domElement.toDataURL('image/png');
@@ -163,49 +187,68 @@ function _onMove(evt) {
     settings.mouse.y = (-evt.clientY / _height) * 2 + 1;
 }
 
+// We keep a normal resize function
 function _onResize() {
     _width = window.innerWidth;
     _height = window.innerHeight;
 
+    // If you want to further scale down for mobile:
+    // if (settings.isMobile) {
+    //     _width = Math.floor(_width * 0.8);
+    //     _height = Math.floor(_height * 0.8);
+    // }
+
     postprocessing.resize(_width, _height);
+
+    // Update camera
+    _camera.aspect = _width / _height;
+    _camera.updateProjectionMatrix();
+
+    // Update renderer
+    _renderer.setSize(_width, _height);
 }
 
 function _loop() {
+    // If we flagged animation off mid-loop, just bail
+    if (!_animating) return;
+
     var newTime = Date.now();
     let deltaTime = newTime - _time;
     _render(deltaTime, newTime);
     _time = newTime;
+
     requestAnimationFrame(_loop);
 }
 
-
 function _render(dt, newTime) {
+    // We can skip certain heavy updates if not animating,
+    // but since we check `_animating` in _loop, we only get here if animating.
+
     // Smooth camera movement
     _currentCameraPosition.x += (_targetCameraPosition.x - _currentCameraPosition.x) * _cameraLerpFactor;
     _currentCameraPosition.y += (_targetCameraPosition.y - _currentCameraPosition.y) * _cameraLerpFactor;
     _currentCameraPosition.z += (_targetCameraPosition.z - _currentCameraPosition.z) * _cameraLerpFactor;
 
     _camera.position.copy(_currentCameraPosition);
-    _camera.lookAt(0, 0 ,0);
-    let ratio;
+    _camera.lookAt(0, 0, 0);
 
+    // Background
     _bgColor.setStyle(settings.bgColor);
-    floor.mesh.material.color.copy(_bgColor);
-    _scene.fog.color.copy(_bgColor);
     _renderer.setClearColor(_bgColor.getHex(), settings.bgOpacity);
 
+    // Kickstart initAnimation
     _initAnimation = 1;
     simulator.initAnimation = _initAnimation;
 
+    // Update lights, floor, etc.
     lights.update(dt, _camera);
-
-    // Floor visibility
     floor.mesh.visible = false;
 
-    // Update mouse3d
+    // Update mouse3D
     _camera.updateMatrixWorld();
     _ray.origin.setFromMatrixPosition(_camera.matrixWorld);
-    _ray.direction.set(settings.mouse.x, settings.mouse.y, 0.5)
+    _ray.direction
+        .set(settings.mouse.x, settings.mouse.y, 0.5)
         .unproject(_camera)
         .sub(_ray.origin)
         .normalize();
@@ -214,65 +257,77 @@ function _render(dt, newTime) {
         _ray.direction.set(0, 0, -1);
     }
 
-    var distance = _ray.origin.length() / Math.cos(Math.PI - _ray.direction.angleTo(_ray.origin));
+    let distance = _ray.origin.length() / Math.cos(Math.PI - _ray.direction.angleTo(_ray.origin));
     if (!isFinite(distance)) {
         distance = 100;
     }
+    _ray.origin.add(_ray.direction.multiplyScalar(distance));
 
-    _ray.origin.add(_ray.direction.multiplyScalar(distance * 1.0));
-
+    // Update simulation & particles
     simulator.update(dt);
     particles.update(dt);
 
-    ratio = Math.min((1 - Math.abs(_initAnimation - 0.5) * 2) * 1.2, 1);
-    var blur = (1 - ratio) * 10;
-
-    if (ratio) {
-        ratio = (0.8 + Math.pow(_initAnimation, 1.5) * 0.5);
-        if (_width < 580) ratio *= 0.5;
-    }
-
-    if (typeof math.unLerp === "function") {
-        ratio = math.unLerp(0.5, 0.6, _initAnimation);
-    } else {
-        ratio = 0;
-    }
-
+    // Possibly disable postprocessing on mobile
     if (settings.isMobile) {
         fxaa.enabled = false;
         motionBlur.enabled = false;
         bloom.enabled = false;
     }
 
+    // Render
     postprocessing.render(dt, newTime);
 }
 
 function updateSettings(newSettings) {
-    settings.orbDisplay = newSettings.orbDisplay;
-    settings.speed = newSettings.speed;
-    settings.dieSpeed = newSettings.dieSpeed;
-    settings.curlSize = newSettings.curlSize;
-    settings.attraction = newSettings.attraction;
-    settings.color1 = newSettings.color1;
-    settings.color2 = newSettings.color2;
-
-    settings.bgColor = newSettings.bgColor;
-    settings.bgOpacity = newSettings.bgOpacity;
-    settings.followMouse = newSettings.followMouse;
-    settings.lightIntensity = newSettings.lightIntensity;
-    settings.simulatorTextureWidth = newSettings.simulatorTextureWidth;
-    settings.simulatorTextureHeight = newSettings.simulatorTextureHeight;
+    // Basic merges
+    if (newSettings.orbDisplay !== undefined) {
+        settings.orbDisplay = newSettings.orbDisplay;
+    }
+    if (newSettings.speed !== undefined) {
+        settings.speed = newSettings.speed;
+    }
+    if (newSettings.dieSpeed !== undefined) {
+        settings.dieSpeed = newSettings.dieSpeed;
+    }
+    if (newSettings.curlSize !== undefined) {
+        settings.curlSize = newSettings.curlSize;
+    }
+    if (newSettings.attraction !== undefined) {
+        settings.attraction = newSettings.attraction;
+    }
+    if (newSettings.color1 !== undefined) {
+        settings.color1 = newSettings.color1;
+    }
+    if (newSettings.color2 !== undefined) {
+        settings.color2 = newSettings.color2;
+    }
+    if (newSettings.bgColor !== undefined) {
+        settings.bgColor = newSettings.bgColor;
+    }
+    if (newSettings.bgOpacity !== undefined) {
+        settings.bgOpacity = newSettings.bgOpacity;
+    }
+    if (newSettings.followMouse !== undefined) {
+        settings.followMouse = newSettings.followMouse;
+    }
+    if (newSettings.lightIntensity !== undefined) {
+        settings.lightIntensity = newSettings.lightIntensity;
+    }
+    if (newSettings.simulatorTextureWidth !== undefined) {
+        settings.simulatorTextureWidth = newSettings.simulatorTextureWidth;
+    }
+    if (newSettings.simulatorTextureHeight !== undefined) {
+        settings.simulatorTextureHeight = newSettings.simulatorTextureHeight;
+    }
     if (newSettings.cameraTransitionSpeed !== undefined) {
         _cameraLerpFactor = 1 - Math.pow(0.1, 10 / (newSettings.cameraTransitionSpeed * 60));
     }
-    if (newSettings.cameraX !== undefined &&
+    if (
+        newSettings.cameraX !== undefined &&
         newSettings.cameraY !== undefined &&
-        newSettings.cameraZ !== undefined) {
-        _targetCameraPosition.set(
-            newSettings.cameraX,
-            newSettings.cameraY,
-            newSettings.cameraZ
-        );
+        newSettings.cameraZ !== undefined
+    ) {
+        _targetCameraPosition.set(newSettings.cameraX, newSettings.cameraY, newSettings.cameraZ);
     }
     if (newSettings.pattern !== undefined) {
         settings.pattern = newSettings.pattern;
@@ -282,11 +337,21 @@ function updateSettings(newSettings) {
         settings.bloomAmount = newSettings.bloomAmount;
         bloom.updateBloomAmount(settings.bloomAmount);
     }
+    if (newSettings.isAnimating !== undefined) {
+        // If we receive a new isAnimating state, respond accordingly
+        settings.isAnimating = newSettings.isAnimating;
+        if (settings.isAnimating && !_animating) {
+            startWebGLAnimation();
+        } else if (!settings.isAnimating && _animating) {
+            stopWebGLAnimation();
+        }
+    }
 }
 
 module.exports = {
     init,
-    updateSettings: updateSettings,
-    takeScreenshot: takeScreenshot,
-    startWebGLAnimation: startWebGLAnimation
+    startWebGLAnimation,
+    stopWebGLAnimation,
+    updateSettings,
+    takeScreenshot
 };
