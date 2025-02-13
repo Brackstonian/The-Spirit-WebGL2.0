@@ -58,7 +58,7 @@ function init(container) {
     _renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
-        preserveDrawingBuffer: false,
+        preserveDrawingBuffer: true,
         powerPreference: 'low-power',
         precision: precision
     });
