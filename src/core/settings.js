@@ -18,7 +18,7 @@ var query = exports.query = parse(window.location.href.replace('#', '?'));
 
 var screenWidth = window.innerWidth;
 
-const calcPerformance = (iterations = 10000000) => {
+const calcPerformance = (iterations = 10_000_000) => {
     const start = performance.now();
     
     let sum = 0;
@@ -107,11 +107,11 @@ exports.motionBlurQualityList = keys(motionBlurQualityMap);
 query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
 
 // Optimize post-processing for mobile
-exports.motionBlur = screenCategory !== 'mobile' && (resultPerformance < 90);
+exports.motionBlur = screenCategory !== 'mobile' && (resultPerformance < 40);
 exports.motionBlurPause = false;
 // exports.bloom = screenCategory !== 'mobile';
-exports.bloom = (screenCategory !== 'mobile') && (resultPerformance < 90);
-exports.fxaa = screenCategory !== 'mobile' && (resultPerformance < 90);
+exports.bloom = (screenCategory !== 'mobile') && (resultPerformance < 40);
+exports.fxaa = screenCategory !== 'mobile' && (resultPerformance < 40);
 
 
 console.log(
