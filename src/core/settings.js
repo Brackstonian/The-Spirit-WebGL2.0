@@ -18,6 +18,22 @@ var query = exports.query = parse(window.location.href.replace('#', '?'));
 
 var screenWidth = window.innerWidth;
 
+const calcPerformance = (iterations = 10000000) => {
+    const start = performance.now();
+    
+    let sum = 0;
+    for (let i = 0; i < iterations; i++) {
+        sum += i;
+    }
+    const end = performance.now();
+    
+    return end - start; // milliseconds
+};
+
+var resultPerformance = calcPerformance();
+
+window.cpuPerformance = {}
+cpuPerformance.value = resultPerformance;
 // Adjust settings based on screen width
 var screenCategory;
 if (screenWidth <= 394) {
@@ -36,6 +52,19 @@ var amountMap = {
     ipadPro: { amount: '524k', texture: [1024, 512], radius: 1.2 },
     desktop: { amount: '524k', texture: [1024, 512], radius: 1.6 }
 };
+
+if (screenCategory === 'desktop') {
+    if (resultPerformance > 190) {
+        amountMap.desktop.amount  = '65k';
+        amountMap.desktop.texture = [256, 256];
+        amountMap.desktop.radius  = 1;
+    } else if (resultPerformance > 90) {
+        amountMap.desktop.amount  = '262k';
+        amountMap.desktop.texture = [512, 384];
+        amountMap.desktop.radius  = 1.3;
+    }
+    // else < 70ms => keep default (524k)
+}
 
 // Apply the chosen settings
 var { amount, texture, radius } = amountMap[screenCategory];
@@ -78,7 +107,22 @@ exports.motionBlurQualityList = keys(motionBlurQualityMap);
 query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
 
 // Optimize post-processing for mobile
-exports.motionBlur = screenCategory !== 'mobile';
+exports.motionBlur = screenCategory !== 'mobile' && (resultPerformance < 90);
 exports.motionBlurPause = false;
-exports.bloom = screenCategory !== 'mobile';
-exports.fxaa = screenCategory !== 'mobile';
+// exports.bloom = screenCategory !== 'mobile';
+exports.bloom = (screenCategory !== 'mobile') && (resultPerformance < 90);
+exports.fxaa = screenCategory !== 'mobile' && (resultPerformance < 90);
+
+
+console.log(
+    "screenCategory:",
+    screenCategory,
+    "resultPerformance:",
+    resultPerformance,
+    "fxaa:",
+    exports.fxaa,
+    "bloom:",
+    exports.bloom,
+    "motionBlur:",
+    exports.motionBlur
+  );
