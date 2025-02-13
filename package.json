@@ -1,6 +1,6 @@
 {
   "name": "the-spirit-webgl2",
-  "version": "2.12.1",
+  "version": "2.12.2",
   "description": "WebGL2 Spirit Library",
   "main": "app/index.js",
   "files": [
