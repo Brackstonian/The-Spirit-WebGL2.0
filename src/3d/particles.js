@@ -33,7 +33,7 @@ function init(renderer) {
         const mesh = _createTriangleMesh(orbIndex, _color1[orbIndex], _color2[orbIndex]);
         mesh.visible = true;
         _meshes.push(mesh);
-        container.add(mesh);
+        container.add(mesh); // Only add mesh here
     });
 
     _renderer = renderer;
@@ -132,18 +132,19 @@ function _createTriangleMesh(orbIndex, color1, color2) {
     material.uniforms.shadowIntensity.value = 0.8;
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.customDistanceMaterial = new THREE.ShaderMaterial( {
-        uniforms:THREE.UniformsUtils.merge([ 
-		THREE.UniformsLib.common,
-		{
-			referencePosition: { value: /*@__PURE__*/ new THREE.Vector3() },
-			nearDistance: { value: 1 },
-			farDistance: { value: 1000 }
-		},
-		{
-            texturePosition: { type: 't', value: undef },
-            flipRatio: { type: 'f', value: 0 }
-        }]),
+    mesh.customDistanceMaterial = new THREE.ShaderMaterial({
+        uniforms: THREE.UniformsUtils.merge([ 
+            THREE.UniformsLib.common,
+            {
+                referencePosition: { value: new THREE.Vector3() },
+                nearDistance: { value: 1 },
+                farDistance: { value: 1000 }
+            },
+            {
+                texturePosition: { type: 't', value: undef },
+                flipRatio: { type: 'f', value: 0 }
+            }
+        ]),
         vertexShader: shaderParse(glslify('../glsl/trianglesDistance.vert')),
         fragmentShader: shaderParse(glslify('../glsl/particlesDistance.frag')),
         depthTest: true,
@@ -151,31 +152,30 @@ function _createTriangleMesh(orbIndex, color1, color2) {
         side: THREE.BackSide,
         blending: THREE.NoBlending
     });
-	mesh.customDistanceMaterial.isMeshDistanceMaterial = true;
+    mesh.customDistanceMaterial.isMeshDistanceMaterial = true;
 
-	mesh.motionMaterial = new THREE.ShaderMaterial({
-		uniforms: {
-				u_prevModelViewMatrix: {type: 'm4', value: new THREE.Matrix4()},
-				u_motionMultiplier: {type: 'f', value: 1},
-				texturePosition: { type: 't', value: undef },
-				texturePrevPosition: { type: 't', value: undef },
-				flipRatio: { type: 'f', value: 0 },
-				cameraMatrix: { type: 'm4', value: undef }
-			},
-		vertexShader : shaderParse(glslify('../glsl/trianglesMotion.vert')),
-		fragmentShader : shaderParse(glslify('./postprocessing/motionBlur/motionBlurMotion.frag')),
-		depthTest: true,
-		depthWrite: true,
-		side: THREE.DoubleSide,
-		blending: THREE.NoBlending
-	});
-	mesh.motionMaterial.motionMultiplier = 1;
-	mesh.motionMaterial.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
-	
+    mesh.motionMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            u_prevModelViewMatrix: { type: 'm4', value: new THREE.Matrix4() },
+            u_motionMultiplier: { type: 'f', value: 1 },
+            texturePosition: { type: 't', value: undef },
+            texturePrevPosition: { type: 't', value: undef },
+            flipRatio: { type: 'f', value: 0 },
+            cameraMatrix: { type: 'm4', value: undef }
+        },
+        vertexShader: shaderParse(glslify('../glsl/trianglesMotion.vert')),
+        fragmentShader: shaderParse(glslify('./postprocessing/motionBlur/motionBlurMotion.frag')),
+        depthTest: true,
+        depthWrite: true,
+        side: THREE.DoubleSide,
+        blending: THREE.NoBlending
+    });
+    mesh.motionMaterial.motionMultiplier = 1;
+    mesh.motionMaterial.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
+    
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.renderOrder = 1;
-    container.add(mesh);
 
     return mesh;
 }
@@ -224,4 +224,3 @@ function update(dt) {
         }
     });
 }
-
