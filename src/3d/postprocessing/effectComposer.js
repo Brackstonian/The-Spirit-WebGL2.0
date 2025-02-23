@@ -1,10 +1,10 @@
 import THREE from '../../utils/three.js';
 
-var fboHelper = require('../fboHelper');
-var settings = require('../../core/settings');
-var merge = require('mout/object/merge');
+let fboHelper = require('../fboHelper');
+let settings = require('../../core/settings');
+let merge = require('mout/object/merge');
 
-var undef;
+let undef;
 
 exports.init = init;
 exports.resize = resize;
@@ -17,13 +17,13 @@ exports.releaseRenderTarget = releaseRenderTarget;
 
 exports.resolution = undef;
 
-var queue = exports.queue = [];
-var fromRenderTarget = exports.fromRenderTarget = undef;
-var toRenderTarget = exports.toRenderTarget = undef;
-var resolution = exports.resolution = undef;
-var _renderTargetLists = {};
-var _renderTargetCounts = {};
-var _renderTargetDefaultState = {
+let queue = exports.queue = [];
+let fromRenderTarget = exports.fromRenderTarget = undef;
+let toRenderTarget = exports.toRenderTarget = undef;
+let resolution = exports.resolution = undef;
+let _renderTargetLists = {};
+let _renderTargetCounts = {};
+let _renderTargetDefaultState = {
     depthBuffer : false,
     texture: {
         generateMipmaps : false
@@ -57,7 +57,7 @@ function resize(width, height) {
     exports.camera.updateProjectionMatrix();
     exports.renderer.setSize(width, height, false);
 
-    for(var i = 0, len = queue.length; i < len; i++) {
+    for(let i = 0, len = queue.length; i < len; i++) {
         queue[i].resize(width, height);
     }
 }
@@ -67,7 +67,7 @@ function _filterQueue(effect) {
 }
 
 function renderQueue(dt) {
-    var renderableQueue = queue.filter(_filterQueue);
+    let renderableQueue = queue.filter(_filterQueue);
 
     if (renderableQueue.length) {
         toRenderTarget.depthBuffer = true;
@@ -83,8 +83,8 @@ function renderQueue(dt) {
 
         swapRenderTarget();
 
-        var effect;
-        for(var i = 0, len = renderableQueue.length; i < len; i++) {
+        let effect;
+        for(let i = 0, len = renderableQueue.length; i < len; i++) {
             effect = renderableQueue[i];
             effect.render(dt, fromRenderTarget, i === len - 1);
         }
@@ -116,7 +116,7 @@ function render(material, toScreen) {
 }
 
 function swapRenderTarget() {
-    var tmp = toRenderTarget;
+    let tmp = toRenderTarget;
     toRenderTarget = exports.toRenderTarget = fromRenderTarget;
     fromRenderTarget = exports.fromRenderTarget = tmp;
 }
@@ -125,11 +125,11 @@ function getRenderTarget(bitShift, isRGBA) {
     bitShift = bitShift || 0;
     isRGBA = +(isRGBA || 0);
 
-    var width = resolution.x >> bitShift;
-    var height = resolution.y >> bitShift;
-    var id = bitShift + '_' + isRGBA;
-    var list = _getRenderTargetList(id);
-    var renderTarget;
+    let width = resolution.x >> bitShift;
+    let height = resolution.y >> bitShift;
+    let id = bitShift + '_' + isRGBA;
+    let list = _getRenderTargetList(id);
+    let renderTarget;
     if(list.length) {
         renderTarget = list.pop();
         merge(renderTarget, _renderTargetDefaultState);
@@ -148,10 +148,10 @@ function getRenderTarget(bitShift, isRGBA) {
 }
 
 function releaseRenderTarget(renderTarget) {
-    var renderTargets = arguments;
-    var found, j, jlen, id, list;
+    let renderTargets = arguments;
+    let found, j, jlen, id, list;
 
-    for(var i = 0, len = renderTargets.length; i < len; i++) {
+    for(let i = 0, len = renderTargets.length; i < len; i++) {
         renderTarget = renderTargets[i];
         id = renderTarget._listId;
         list = _getRenderTargetList(id);

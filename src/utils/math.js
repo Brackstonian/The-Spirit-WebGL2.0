@@ -1,4 +1,4 @@
-for(var id in Math) {
+for(let id in Math) {
     exports[id] = Math[id];
 }
 
@@ -14,8 +14,8 @@ exports.hash = hash;
 exports.hash2 = hash2;
 exports.sign = sign;
 
-var PI = Math.PI;
-var TAU = exports.TAU = PI * 2;
+let PI = Math.PI;
+let TAU = exports.TAU = PI * 2;
 
 function step ( edge, val ) {
     return val < edge ? 0 : 1;

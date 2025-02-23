@@ -1,8 +1,8 @@
-var Effect = require('../Effect');
-var glslify = require('glslify');
+let Effect = require('../Effect');
+let glslify = require('glslify');
 
 module.exports = new Effect();
-var _super = Effect.prototype;
+let _super = Effect.prototype;
 
 module.exports.init = init;
 

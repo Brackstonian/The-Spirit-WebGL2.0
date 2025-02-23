@@ -1,5 +1,5 @@
 // from https://github.com/kaelzhang/easing-functions/
-var basic = {
+let basic = {
     Linear: {
         None: function(e) {
             return e;
@@ -92,7 +92,7 @@ var basic = {
     },
     Elastic: {
         In: function(e) {
-            var t, n =0.1,
+            let t, n =0.1,
                 r =0.4;
             if (e === 0) return 0;
             if (e === 1) return 1;
@@ -103,7 +103,7 @@ var basic = {
             return -(n * Math.pow(2, 10 * (e -= 1)) * Math.sin((e - t) * 2 * Math.PI / r));
         },
         Out: function(e) {
-            var t, n =0.1,
+            let t, n =0.1,
                 r =0.4;
             if (e === 0) return 0;
             if (e === 1) return 1;
@@ -114,7 +114,7 @@ var basic = {
             return n * Math.pow(2, -10 * e) * Math.sin((e - t) * 2 * Math.PI / r) + 1;
         },
         InOut: function(e) {
-            var t, n =0.1,
+            let t, n =0.1,
                 r =0.4;
             if (e === 0) return 0;
             if (e === 1) return 1;
@@ -130,15 +130,15 @@ var basic = {
     },
     Back: {
         In: function(e) {
-            var t = 1.70158;
+            let t = 1.70158;
             return e * e * ((t + 1) * e - t);
         },
         Out: function(e) {
-            var t = 1.70158;
+            let t = 1.70158;
             return --e * e * ((t + 1) * e + t) + 1;
         },
         InOut: function(e) {
-            var t = 1.70158 * 1.525;
+            let t = 1.70158 * 1.525;
             if ((e *= 2) < 1) return 0.5 * e * e * ((t + 1) * e - t);
             return 0.5 * ((e -= 2) * e * ((t + 1) * e + t) + 2);
         }
@@ -168,7 +168,7 @@ var basic = {
 exports.basic = basic;
 exports.linear = basic.Linear;
 
-var id, list;
+let id, list;
 for(id in basic) {
     if(id !== 'Linear') {
         list = basic[id];

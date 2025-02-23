@@ -1,36 +1,36 @@
 import THREE from '../utils/three.js';
 
-var settings = require('../core/settings');
+let settings = require('../core/settings');
 const patterns = require('../core/patterns'); // Import the patterns from patterns.js
 
 
-var glslify = require('glslify');
-var shaderParse = require('../helpers/shaderParse');
+let glslify = require('glslify');
+let shaderParse = require('../helpers/shaderParse');
 
-var _copyShader;
-var _textureDefaultPosition;
-var _renderer;
-var _mesh;
-var _scene;
-var _camera;
+let _copyShader;
+let _textureDefaultPosition;
+let _renderer;
+let _mesh;
+let _scene;
+let _camera;
 
-var positionShaders = []; // Array to hold position shaders for each orb
+let positionShaders = []; // Array to hold position shaders for each orb
 exports.positionShaders = positionShaders;
-var positionRenderTargets = []; // Array to hold render targets for each orb
-var positionRenderTargets2 = []; // Array for secondary render targets (for swapping)
+let positionRenderTargets = []; // Array to hold render targets for each orb
+let positionRenderTargets2 = []; // Array for secondary render targets (for swapping)
 
-var followPoints = []; // Array to hold follow points
+let followPoints = []; // Array to hold follow points
 exports.followPoints = followPoints;
-var followPointTimes = []; // Array to hold time for each follow point
+let followPointTimes = []; // Array to hold time for each follow point
 
-var followPointStates = []; // Array to hold states for each follow point
+let followPointStates = []; // Array to hold states for each follow point
 exports.followPointStates = followPointStates;
 
-var pointDistance = 150; // Set the distance between follow points
+let pointDistance = 150; // Set the distance between follow points
 
-var TEXTURE_WIDTH = exports.TEXTURE_WIDTH = settings.simulatorTextureWidth;
-var TEXTURE_HEIGHT = exports.TEXTURE_HEIGHT = settings.simulatorTextureHeight;
-var AMOUNT = exports.AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
+let TEXTURE_WIDTH = exports.TEXTURE_WIDTH = settings.simulatorTextureWidth;
+let TEXTURE_HEIGHT = exports.TEXTURE_HEIGHT = settings.simulatorTextureHeight;
+let AMOUNT = exports.AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
 
 exports.init = init;
 exports.update = update;
@@ -38,7 +38,7 @@ exports.initAnimation = 0;
 
 exports.positionRenderTarget = [];
 
-var currentPattern = settings.pattern; // This is an array ['default', 'spiral']
+let currentPattern = settings.pattern; // This is an array ['default', 'spiral']
 
 exports.setPattern = (patternInput) => {
     if (Array.isArray(patternInput)) {
@@ -62,7 +62,7 @@ exports.setPattern = (patternInput) => {
 
 // Function to add a new follow point
 function addFollowPoint() {
-    var newPoint = new THREE.Vector3();
+    let newPoint = new THREE.Vector3();
     followPoints.push(newPoint);
     followPointTimes.push(0); // Initialize time for the new follow point
     followPointStates.push({
@@ -79,9 +79,9 @@ function init(renderer, numOrbs = 2) {
     _camera = new THREE.Camera();
     _camera.position.z = 1;
 
-    var rawShaderPrefix = 'precision ' + renderer.capabilities.precision + ' float;\n';
+    let rawShaderPrefix = 'precision ' + renderer.capabilities.precision + ' float;\n';
 
-    var gl = _renderer.getContext();
+    let gl = _renderer.getContext();
     if (!gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS)) {
         alert('No support for vertex shader textures!');
         return;
@@ -181,10 +181,10 @@ function _updatePosition(dt) {
 }
 
 function _createPositionTexture() {
-    var positions = new Float32Array(AMOUNT * 4);
-    var i4;
-    var r, phi, theta;
-    for (var i = 0; i < AMOUNT; i++) {
+    let positions = new Float32Array(AMOUNT * 4);
+    let i4;
+    let r, phi, theta;
+    for (let i = 0; i < AMOUNT; i++) {
         i4 = i * 4;
         r = (0.5 + Math.random() * 0.5) * 50;
         phi = (Math.random() - 0.5) * Math.PI;
@@ -194,7 +194,7 @@ function _createPositionTexture() {
         positions[i4 + 2] = r * Math.sin(theta) * Math.cos(phi);
         positions[i4 + 3] = Math.random();
     }
-    var texture = new THREE.DataTexture(positions, TEXTURE_WIDTH, TEXTURE_HEIGHT, THREE.RGBAFormat, THREE.FloatType);
+    let texture = new THREE.DataTexture(positions, TEXTURE_WIDTH, TEXTURE_HEIGHT, THREE.RGBAFormat, THREE.FloatType);
     texture.minFilter = THREE.NearestFilter;
     texture.magFilter = THREE.NearestFilter;
     texture.needsUpdate = true;
@@ -210,9 +210,9 @@ function update(dt) {
         r = 100;
         h = 40;
     }
-    var autoClearColor = _renderer.autoClearColor;
-    var clearColor = _renderer.getClearColor(new THREE.Color()).getHex();
-    var clearAlpha = _renderer.getClearAlpha();
+    let autoClearColor = _renderer.autoClearColor;
+    let clearColor = _renderer.getClearColor(new THREE.Color()).getHex();
+    let clearAlpha = _renderer.getClearAlpha();
 
     _renderer.autoClearColor = false;
 

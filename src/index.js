@@ -1,5 +1,5 @@
 import THREE from './utils/three.js';
-var raf = require('raf'); // if you need it, or you can just use window.requestAnimationFrame
+let raf = require('raf'); // if you need it, or you can just use window.requestAnimationFrame
 import settings from './core/settings';
 import math from './utils/math';
 import ease from './utils/ease';
@@ -14,26 +14,26 @@ import particles from './3d/particles';
 import lights from './3d/lights';
 import floor from './3d/floor';
 
-var _width = 0;
-var _height = 0;
+let _width = 0;
+let _height = 0;
 
-var _camera;
-var _scene;
-var _renderer;
+let _camera;
+let _scene;
+let _renderer;
 
-var _time = 0;
-var _ray;
+let _time = 0;
+let _ray;
 
-var _initAnimation = 0;
+let _initAnimation = 0;
 
-var _bgColor;
+let _bgColor;
 
-var _currentCameraPosition;
-var _targetCameraPosition;
-var _cameraLerpFactor = 0.05;
+let _currentCameraPosition;
+let _targetCameraPosition;
+let _cameraLerpFactor = 0.05;
 
 // This local flag can mirror settings.isAnimating:
-var _animating = false;
+let _animating = false;
 
 function init(container) {
     // -- Moved typical checks for settings into init:
@@ -212,7 +212,7 @@ function _loop() {
     // If we flagged animation off mid-loop, just bail
     if (!_animating) return;
 
-    var newTime = Date.now();
+    let newTime = Date.now();
     let deltaTime = newTime - _time;
     _render(deltaTime, newTime);
     _time = newTime;

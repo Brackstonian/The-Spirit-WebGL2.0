@@ -1,17 +1,17 @@
 import THREE from '../utils/three';
-var glslify = require('glslify');
-var settings = require('../core/settings');
-var undef;
+let glslify = require('glslify');
+let settings = require('../core/settings');
+let undef;
 
 
-var _renderer;
-var _mesh;
-var _scene;
-var _camera;
+let _renderer;
+let _mesh;
+let _scene;
+let _camera;
 
-var rawShaderPrefix = exports.rawShaderPrefix = undef;
-var vertexShader = exports.vertexShader = undef;
-var copyMaterial = exports.copyMaterial = undef;
+let rawShaderPrefix = exports.rawShaderPrefix = undef;
+let vertexShader = exports.vertexShader = undef;
+let copyMaterial = exports.copyMaterial = undef;
 
 exports.init = init;
 exports.copy = copy;
@@ -73,7 +73,7 @@ function render(material, renderTarget) {
 
 
 function createRenderTarget(width, height, format, type, minFilter, magFilter) {
-    var renderTarget = new THREE.WebGLRenderTarget(width || 1, height || 1, {
+    let renderTarget = new THREE.WebGLRenderTarget(width || 1, height || 1, {
         format: THREE.RGBAFormat, // RGBA for transparency
         type: THREE.UnsignedByteType,
         minFilter: THREE.LinearFilter,

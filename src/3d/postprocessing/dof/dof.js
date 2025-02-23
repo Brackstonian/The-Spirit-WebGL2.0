@@ -1,23 +1,23 @@
 import THREE from '../../../utils/three.js';
-var settings = require('../../../core/settings');
-var Effect = require('../Effect');
-var effectComposer = require('../effectComposer');
-var fboHelper = require('../../fboHelper');
+let settings = require('../../../core/settings');
+let Effect = require('../Effect');
+let effectComposer = require('../effectComposer');
+let fboHelper = require('../../fboHelper');
 
-var glslify = require('glslify');
+let glslify = require('glslify');
 
 
-var undef;
+let undef;
 
-var exports = module.exports = new Effect();
-var _super = Effect.prototype;
+let exports = module.exports = new Effect();
+let _super = Effect.prototype;
 
 exports.init = init;
 exports.render = render;
 
-var _depth1Material;
-var _depth1;
-var _depth1Buffer;
+let _depth1Material;
+let _depth1;
+let _depth1Buffer;
 
 function init() {
 
@@ -50,8 +50,8 @@ function init() {
 
 function render(dt, renderTarget, toScreen) {
 
-    var cameraDistance = effectComposer.camera.position.length();
-    var distance = cameraDistance;
+    let cameraDistance = effectComposer.camera.position.length();
+    let distance = cameraDistance;
 
     if(settings.dofMouse) {
         _depth1Material.uniforms.u_distance.value = settings.distanceMap;
@@ -62,8 +62,8 @@ function render(dt, renderTarget, toScreen) {
         distance = settings.dofFocusZ;
     }
 
-    var uniforms = this.uniforms;
-    var prevDistance = uniforms.u_dofDistance.value;
+    let uniforms = this.uniforms;
+    let prevDistance = uniforms.u_dofDistance.value;
     uniforms.u_dofDistance.value += (distance - prevDistance) * 0.1;
 
     uniforms.u_amount.value = settings.dof;

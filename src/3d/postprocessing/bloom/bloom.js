@@ -1,17 +1,17 @@
 import THREE from '../../../utils/three';
 
 
-var Effect = require('../Effect');
-var effectComposer = require('../effectComposer');
-var fboHelper = require('../../fboHelper');
-var settings = require('../../../core/settings');
+let Effect = require('../Effect');
+let effectComposer = require('../effectComposer');
+let fboHelper = require('../../fboHelper');
+let settings = require('../../../core/settings');
 
-var glslify = require('glslify');
+let glslify = require('glslify');
 
-var undef;
+let undef;
 
-var exports = module.exports = new Effect();
-var _super = Effect.prototype;
+let exports = module.exports = new Effect();
+let _super = Effect.prototype;
 
 exports.init = init;
 exports.render = render;
@@ -20,9 +20,9 @@ exports.updateBloomAmount = updateBloomAmount;
 exports.blurRadius = 5;
 exports.amount = settings.bloomAmount;
 
-var _blurMaterial;
+let _blurMaterial;
 
-var BLUR_BIT_SHIFT = 1;
+let BLUR_BIT_SHIFT = 1;
 
 function init() {
 
@@ -47,11 +47,11 @@ function init() {
 
 function render(dt, renderTarget, toScreen) {
 
-    var tmpRenderTarget1 = effectComposer.getRenderTarget(BLUR_BIT_SHIFT);
-    var tmpRenderTarget2 = effectComposer.getRenderTarget(BLUR_BIT_SHIFT);
+    let tmpRenderTarget1 = effectComposer.getRenderTarget(BLUR_BIT_SHIFT);
+    let tmpRenderTarget2 = effectComposer.getRenderTarget(BLUR_BIT_SHIFT);
     effectComposer.releaseRenderTarget(tmpRenderTarget1, tmpRenderTarget2);
 
-    var blurRadius = exports.blurRadius;
+    let blurRadius = exports.blurRadius;
     _blurMaterial.uniforms.u_texture.value = renderTarget.texture;
     _blurMaterial.uniforms.u_delta.value.set(blurRadius / effectComposer.resolution.x, 0);
 

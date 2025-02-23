@@ -1,5 +1,5 @@
 
-// var amountMap = {
+// let amountMap = {
 //     '4k' : [64, 64, 0.29],
 //     '8k' : [128, 64, 0.42],
 //     '16k' : [128, 128, 0.48],
@@ -12,11 +12,11 @@
 //     '2m' : [2048, 1024, 2],
 //     '4m' : [2048, 2048, 2.5]
 // };
-var parse = require('mout/queryString/parse');
-var keys = require('mout/object/keys');
-var query = exports.query = parse(window.location.href.replace('#', '?'));
+let parse = require('mout/queryString/parse');
+let keys = require('mout/object/keys');
+let query = exports.query = parse(window.location.href.replace('#', '?'));
 
-var screenWidth = window.innerWidth;
+let screenWidth = window.innerWidth;
 
 const calcPerformance = (iterations = 10_000_000) => {
     const start = performance.now();
@@ -30,12 +30,12 @@ const calcPerformance = (iterations = 10_000_000) => {
     return end - start; // milliseconds
 };
 
-var resultPerformance = calcPerformance();
+let resultPerformance = calcPerformance();
 
 window.cpuPerformance = {}
 cpuPerformance.value = resultPerformance;
 // Adjust settings based on screen width
-var screenCategory;
+let screenCategory;
 if (screenWidth <= 394) {
     screenCategory = 'mobile';
 } else if (screenWidth <= 768) {
@@ -46,7 +46,7 @@ if (screenWidth <= 394) {
     screenCategory = 'desktop';
 }
 
-var amountMap = {
+let amountMap = {
     mobile:  { amount: '65k', texture: [256, 256], radius: 0.6 },
     tablet:  { amount: '524k', texture: [512, 128], radius: 0.6 },
     ipadPro: { amount: '524k', texture: [1024, 512], radius: 1.2 },
@@ -67,7 +67,7 @@ if (screenCategory === 'desktop') {
 }
 
 // Apply the chosen settings
-var { amount, texture, radius } = amountMap[screenCategory];
+let { amount, texture, radius } = amountMap[screenCategory];
 query.amount = amount;
 
 exports.simulatorTextureWidth = texture[0];
@@ -97,7 +97,7 @@ exports.useStats = false;
 exports.isMobile = /(iPad|iPhone|Android)/i.test(navigator.userAgent);
 
 // Post-processing settings
-var motionBlurQualityMap = exports.motionBlurQualityMap = {
+let motionBlurQualityMap = exports.motionBlurQualityMap = {
     best: 1,
     high: 0.5,
     medium: 1 / 3,

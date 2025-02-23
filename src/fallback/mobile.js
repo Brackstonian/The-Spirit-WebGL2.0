@@ -1,8 +1,8 @@
-var settings = require('../core/settings');
+let settings = require('../core/settings');
 
 exports.pass = pass;
 
-var _callback;
+let _callback;
 
 function pass(func) {
     // if(settings.isMobile) {
@@ -13,8 +13,8 @@ function pass(func) {
     // }
 }
 
-var _container;
-var _bypass;
+let _container;
+let _bypass;
 
 function init() {
     //_container = document.querySelector('.mobile');

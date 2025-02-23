@@ -1,17 +1,17 @@
 import THREE from '../utils/three.js';
 
-var glslify = require('glslify');
-var mixIn = require('mout/object/mixIn');
-var fillIn = require('mout/object/fillIn');
-var shaderParse = require('../../../helpers/shaderParse');
+let glslify = require('glslify');
+let mixIn = require('mout/object/mixIn');
+let fillIn = require('mout/object/fillIn');
+let shaderParse = require('../../../helpers/shaderParse');
 
 function MeshMotionMaterial ( parameters ) {
 
     parameters = parameters || {};
 
-    var uniforms = parameters.uniforms || {};
-    var vertexShader = shaderParse(glslify('./motionBlurMotion.vert'));
-    var fragmentShader = shaderParse(glslify('./motionBlurMotion.frag'));
+    let uniforms = parameters.uniforms || {};
+    let vertexShader = shaderParse(glslify('./motionBlurMotion.vert'));
+    let fragmentShader = shaderParse(glslify('./motionBlurMotion.frag'));
     this.motionMultiplier = parameters.motionMultiplier || 1;
 
     return new THREE.ShaderMaterial(mixIn({
@@ -27,6 +27,6 @@ function MeshMotionMaterial ( parameters ) {
 
 }
 
-var _p = MeshMotionMaterial.prototype = Object.create( THREE.ShaderMaterial.prototype );
+let _p = MeshMotionMaterial.prototype = Object.create( THREE.ShaderMaterial.prototype );
 _p.constructor = MeshMotionMaterial;
 module.exports = MeshMotionMaterial;

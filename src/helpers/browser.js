@@ -1,10 +1,10 @@
-var undef;
-var _prefixes = 'Webkit Moz O ms'.split(' ');
-var _dummyStyle = document.createElement('div').style;
-var _win = window;
-var _doc = document;
-var _body = _doc.body;
-var _ua = navigator.userAgent.toLowerCase();
+let undef;
+let _prefixes = 'Webkit Moz O ms'.split(' ');
+let _dummyStyle = document.createElement('div').style;
+let _win = window;
+let _doc = document;
+let _body = _doc.body;
+let _ua = navigator.userAgent.toLowerCase();
 
 function init() {
 
@@ -41,7 +41,7 @@ function init() {
 }
 
 function _testMediaFormat(type) {
-    var dom;
+    let dom;
     try {
         switch(type) {
             case 'video':
@@ -55,9 +55,9 @@ function _testMediaFormat(type) {
     }catch(e){
         dom = _doc.createElement(type);
     }
-    var orders = exports[type + 'FormatTestOrders'];
-    var format;
-    for(var i = 0, len = orders.length; i < len; i++) {
+    let orders = exports[type + 'FormatTestOrders'];
+    let format;
+    for(let i = 0, len = orders.length; i < len; i++) {
         if(dom.canPlayType && dom.canPlayType(orders[i])) {
             format = orders[i].substr(orders[i].indexOf('/') + 1);
             break;
@@ -67,8 +67,8 @@ function _testMediaFormat(type) {
 }
 
 function _getPropIndex( prop ) {
-    var ucProp  = prop.charAt(0).toUpperCase() + prop.slice(1);
-    var i = _prefixes.length;
+    let ucProp  = prop.charAt(0).toUpperCase() + prop.slice(1);
+    let i = _prefixes.length;
     while(i--) {
         if(_dummyStyle[_prefixes[i] + ucProp] !== undef ) {
             return i + 2;

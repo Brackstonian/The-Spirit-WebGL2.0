@@ -1,15 +1,15 @@
 import THREE from '../../../utils/three';
 
-var Effect = require('../Effect');
-var effectComposer = require('../effectComposer');
-var fboHelper = require('../../fboHelper');
+let Effect = require('../Effect');
+let effectComposer = require('../effectComposer');
+let fboHelper = require('../../fboHelper');
 
-var glslify = require('glslify');
+let glslify = require('glslify');
 
-var undef;
+let undef;
 
-var exports = module.exports = new Effect();
-var _super = Effect.prototype;
+let exports = module.exports = new Effect();
+let _super = Effect.prototype;
 
 exports.init = init;
 exports.resize = resize;
@@ -36,30 +36,30 @@ exports.useDithering = false;
 exports.motionRenderTargetScale = 1;
 exports.linesRenderTargetScale = 1 / 2;
 
-var _motionRenderTarget;
-var _linesRenderTarget;
+let _motionRenderTarget;
+let _linesRenderTarget;
 
-var _lines;
-var _linesCamera;
-var _linesScene;
-var _linesPositions;
-var _linesPositionAttribute;
-var _linesGeometry;
-var _linesMaterial;
+let _lines;
+let _linesCamera;
+let _linesScene;
+let _linesPositions;
+let _linesPositionAttribute;
+let _linesGeometry;
+let _linesMaterial;
 
-var _samplingMaterial;
+let _samplingMaterial;
 
-var _prevUseDithering;
-var _prevUseSampling;
+let _prevUseDithering;
+let _prevUseSampling;
 
-var _visibleCache = [];
+let _visibleCache = [];
 
-var _width;
-var _height;
+let _width;
+let _height;
 
 function init(sampleCount) {
 
-    var gl = effectComposer.renderer.getContext();
+    let gl = effectComposer.renderer.getContext();
     // if(!gl.getExtension('OES_texture_float') || !gl.getExtension('OES_texture_float_linear')) {
 		// alert('no float linear support');
     //}
@@ -142,28 +142,28 @@ function resize(width, height) {
         _height = height;
     }
 
-    var motionWidth = ~~(width * exports.motionRenderTargetScale);
-    var motionHeight = ~~(height * exports.motionRenderTargetScale);
+    let motionWidth = ~~(width * exports.motionRenderTargetScale);
+    let motionHeight = ~~(height * exports.motionRenderTargetScale);
     _motionRenderTarget.setSize(motionWidth , motionHeight);
 
     if(!exports.useSampling) {
-        var linesWidth = ~~(width * exports.linesRenderTargetScale);
-        var linesHeight = ~~(height * exports.linesRenderTargetScale);
+        let linesWidth = ~~(width * exports.linesRenderTargetScale);
+        let linesHeight = ~~(height * exports.linesRenderTargetScale);
         _linesRenderTarget.setSize(linesWidth, linesHeight);
 
-        var i;
-        var noDithering = !exports.useDithering;
-        var amount = noDithering ? linesWidth * linesHeight : _getDitheringAmount(linesWidth, linesHeight);
-        var currentLen = _linesPositions.length / 6;
+        let i;
+        let noDithering = !exports.useDithering;
+        let amount = noDithering ? linesWidth * linesHeight : _getDitheringAmount(linesWidth, linesHeight);
+        let currentLen = _linesPositions.length / 6;
         if(amount > currentLen) {
             _linesPositions = new Float32Array(amount * 6);
             _linesPositionAttribute = new THREE.BufferAttribute(_linesPositions, 3);
             //_linesGeometry.removeAttribute('position');
             _linesGeometry.setAttribute( 'position', _linesPositionAttribute );
         }
-        var i6 = 0;
-        var x, y;
-        var size = linesWidth * linesHeight;
+        let i6 = 0;
+        let x, y;
+        let size = linesWidth * linesHeight;
         for(i = 0; i < size; i++) {
             x = i % linesWidth;
             y = ~~(i / linesWidth);

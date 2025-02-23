@@ -1,13 +1,13 @@
 import THREE from '../utils/three';
 
 
-var threeChunkReplaceRegExp = /\/\/\s?chunk_replace\s(.+)([\d\D]+)\/\/\s?end_chunk_replace/gm;
-var threeChunkRegExp = /\/\/\s?chunk\(\s?(\w+)\s?\);/g;
-// var glslifyBugFixRegExp = /(_\d+_\d+)(_\d+_\d+)+/g;
-// var glslifyGlobalRegExp = /GLOBAL_VAR_([^_\.\)\;\,\s]+)(_\d+_\d+)?/g;
-var glslifyGlobalRegExp = /GLOBAL_VAR_([^_\.\)\;\,\s]+)(_\d+)?/g;
+let threeChunkReplaceRegExp = /\/\/\s?chunk_replace\s(.+)([\d\D]+)\/\/\s?end_chunk_replace/gm;
+let threeChunkRegExp = /\/\/\s?chunk\(\s?(\w+)\s?\);/g;
+// let glslifyBugFixRegExp = /(_\d+_\d+)(_\d+_\d+)+/g;
+// let glslifyGlobalRegExp = /GLOBAL_VAR_([^_\.\)\;\,\s]+)(_\d+_\d+)?/g;
+let glslifyGlobalRegExp = /GLOBAL_VAR_([^_\.\)\;\,\s]+)(_\d+)?/g;
 
-var _chunkReplaceObj;
+let _chunkReplaceObj;
 
 function _storeChunkReplaceParse(shader) {
     _chunkReplaceObj = {};
@@ -32,8 +32,8 @@ function _storeChunkReplaceFunc(a, b, c) {
 }
 
 function _replaceThreeChunkFunc(a, b) {
-    var str = THREE.ShaderChunk[b] + '\n';
-    for(var id in _chunkReplaceObj) {
+    let str = THREE.ShaderChunk[b] + '\n';
+    for(let id in _chunkReplaceObj) {
         str = str.replace(id, _chunkReplaceObj[id]);
     }
     return str;

@@ -1,23 +1,23 @@
 import THREE from '../../utils/three';
 
-var effectComposer = require('./effectComposer');
-var fboHelper = require('../fboHelper');
-var merge = require('mout/object/merge');
-var glslify = require('glslify');
+let effectComposer = require('./effectComposer');
+let fboHelper = require('../fboHelper');
+let merge = require('mout/object/merge');
+let glslify = require('glslify');
 
 
-var undef;
+let undef;
 
 function Effect() {}
 
 module.exports = Effect;
-var _p = Effect.prototype;
+let _p = Effect.prototype;
 
 _p.init = init;
 _p.resize = resize;
 _p.render = render;
 
-var _shaderMaterialQuadVertexShader = glslify('../shaderMaterialQuad.vert');
+let _shaderMaterialQuadVertexShader = glslify('../shaderMaterialQuad.vert');
 
 function init(cfg) {
 

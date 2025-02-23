@@ -1,21 +1,21 @@
 import THREE from '../../utils/three.js';
 
-var effectComposer = require('./effectComposer');
-var fxaa = require('./fxaa/fxaa');
-var bloom = require('./bloom/bloom');
-var motionBlur = require('./motionBlur/motionBlur');
-var fboHelper = require('../fboHelper');
+let effectComposer = require('./effectComposer');
+let fxaa = require('./fxaa/fxaa');
+let bloom = require('./bloom/bloom');
+let motionBlur = require('./motionBlur/motionBlur');
+let fboHelper = require('../fboHelper');
 
-var undef;
+let undef;
 
 exports.init = init;
 exports.resize = resize;
 exports.render = render;
 exports.visualizeTarget = undef;
 
-var _renderer;
-var _scene;
-var _camera;
+let _renderer;
+let _scene;
+let _camera;
 
 function init(renderer, scene, camera) {
 

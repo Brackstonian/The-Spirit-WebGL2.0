@@ -1,24 +1,24 @@
 import THREE from '../utils/three.js';
-var settings = require('../core/settings');
-var shaderParse = require('../helpers/shaderParse');
-var glslify = require('glslify');
-var simulator = require('./simulator');
+let settings = require('../core/settings');
+let shaderParse = require('../helpers/shaderParse');
+let glslify = require('glslify');
+let simulator = require('./simulator');
 
-var undef;
+let undef;
 
-var container = exports.container = undef;
+let container = exports.container = undef;
 exports.init = init;
 exports.update = update;
 
-var _renderer;
-var _meshes = [];
-var _color1 = [];
-var _color2 = [];
-var _tmpColor;
+let _renderer;
+let _meshes = [];
+let _color1 = [];
+let _color2 = [];
+let _tmpColor;
 
-var TEXTURE_WIDTH = settings.simulatorTextureWidth;
-var TEXTURE_HEIGHT = settings.simulatorTextureHeight;
-var AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
+let TEXTURE_WIDTH = settings.simulatorTextureWidth;
+let TEXTURE_HEIGHT = settings.simulatorTextureHeight;
+let AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
 
 function init(renderer) {
     container = exports.container = new THREE.Object3D();
@@ -40,13 +40,13 @@ function init(renderer) {
 }
 
 function _createTriangleMesh(orbIndex, color1, color2) {
-    var position = new Float32Array(AMOUNT * 3 * 3);
-    var positionFlip = new Float32Array(AMOUNT * 3 * 3);
-    var fboUV = new Float32Array(AMOUNT * 2 * 3);
+    let position = new Float32Array(AMOUNT * 3 * 3);
+    let positionFlip = new Float32Array(AMOUNT * 3 * 3);
+    let fboUV = new Float32Array(AMOUNT * 2 * 3);
 
-    var PI = Math.PI;
-    var angle = PI * 2 / 3;
-    var angles = [
+    let PI = Math.PI;
+    let angle = PI * 2 / 3;
+    let angles = [
         Math.sin(angle * 2 + PI),
         Math.cos(angle * 2 + PI),
         Math.sin(angle + PI),
@@ -60,8 +60,8 @@ function _createTriangleMesh(orbIndex, color1, color2) {
         Math.sin(angle * 3),
         Math.cos(angle * 3)
     ];
-    var i6, i9;
-    for (var i = 0; i < AMOUNT; i++) {
+    let i6, i9;
+    for (let i = 0; i < AMOUNT; i++) {
         i6 = i * 6;
         i9 = i * 9;
         if (i % 2) {
@@ -98,12 +98,12 @@ function _createTriangleMesh(orbIndex, color1, color2) {
         fboUV[i6 + 1] = fboUV[i6 + 3] = fboUV[i6 + 5] = ~~(i / TEXTURE_WIDTH) / TEXTURE_HEIGHT;
     }
 
-    var geometry = new THREE.BufferGeometry();
+    let geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(position, 3));
     geometry.setAttribute('positionFlip', new THREE.BufferAttribute(positionFlip, 3));
     geometry.setAttribute('fboUV', new THREE.BufferAttribute(fboUV, 2));
 
-    var material = new THREE.ShaderMaterial({
+    let material = new THREE.ShaderMaterial({
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib.fog,
             THREE.UniformsLib.lights,
@@ -131,7 +131,7 @@ function _createTriangleMesh(orbIndex, color1, color2) {
     material.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
     material.uniforms.shadowIntensity.value = 0.8;
 
-    var mesh = new THREE.Mesh(geometry, material);
+    let mesh = new THREE.Mesh(geometry, material);
     mesh.customDistanceMaterial = new THREE.ShaderMaterial({
         uniforms: THREE.UniformsUtils.merge([ 
             THREE.UniformsLib.common,
