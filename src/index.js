@@ -131,6 +131,10 @@ function stopWebGLAnimation() {
     console.log("Stopping WebGL animation...");
     _animating = false;
     settings.isAnimating = false;
+
+    if (_renderer && _renderer.domElement && _renderer.domElement.parentNode) {
+        _renderer.domElement.parentNode.removeChild(_renderer.domElement);
+    }
 }
 
 function takeScreenshot() {
