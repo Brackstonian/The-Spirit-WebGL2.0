@@ -249,7 +249,7 @@ function updateSettings(newSettings) {
     }
 }
 
-export default {
+module.exports =  {
     init,
     startWebGLAnimation,
     stopWebGLAnimation,
