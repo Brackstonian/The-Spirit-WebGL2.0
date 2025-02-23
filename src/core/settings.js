@@ -38,12 +38,16 @@ cpuPerformance.value = resultPerformance;
 let screenCategory;
 if (screenWidth <= 394) {
     screenCategory = 'mobile';
+    exports.particleAmount = 1500
 } else if (screenWidth <= 768) {
     screenCategory = 'tablet';
+    exports.particleAmount = 3000
 } else if (screenWidth <= 1024) {
     screenCategory = 'ipadPro';
+    exports.particleAmount = 10000
 } else {
     screenCategory = 'desktop';
+    exports.particleAmount = 5000
 }
 
 let amountMap = {

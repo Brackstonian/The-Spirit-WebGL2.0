@@ -18,7 +18,7 @@ let _tmpColor;
 
 let TEXTURE_WIDTH = settings.simulatorTextureWidth;
 let TEXTURE_HEIGHT = settings.simulatorTextureHeight;
-let AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
+let AMOUNT = settings.particleAmount;
 
 function init(renderer) {
     container = exports.container = new THREE.Object3D();
@@ -132,46 +132,46 @@ function _createTriangleMesh(orbIndex, color1, color2) {
     material.uniforms.shadowIntensity.value = 0.8;
 
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.customDistanceMaterial = new THREE.ShaderMaterial({
-        uniforms: THREE.UniformsUtils.merge([ 
-            THREE.UniformsLib.common,
-            {
-                referencePosition: { value: new THREE.Vector3() },
-                nearDistance: { value: 1 },
-                farDistance: { value: 1000 }
-            },
-            {
-                texturePosition: { type: 't', value: undef },
-                flipRatio: { type: 'f', value: 0 }
-            }
-        ]),
-        vertexShader: shaderParse(glslify('../glsl/trianglesDistance.vert')),
-        fragmentShader: shaderParse(glslify('../glsl/particlesDistance.frag')),
-        depthTest: true,
-        depthWrite: true,
-        side: THREE.BackSide,
-        blending: THREE.NoBlending
-    });
-    mesh.customDistanceMaterial.isMeshDistanceMaterial = true;
+    // mesh.customDistanceMaterial = new THREE.ShaderMaterial({
+    //     uniforms: THREE.UniformsUtils.merge([ 
+    //         THREE.UniformsLib.common,
+    //         {
+    //             referencePosition: { value: new THREE.Vector3() },
+    //             nearDistance: { value: 1 },
+    //             farDistance: { value: 1000 }
+    //         },
+    //         {
+    //             texturePosition: { type: 't', value: undef },
+    //             flipRatio: { type: 'f', value: 0 }
+    //         }
+    //     ]),
+    //     vertexShader: shaderParse(glslify('../glsl/trianglesDistance.vert')),
+    //     fragmentShader: shaderParse(glslify('../glsl/particlesDistance.frag')),
+    //     depthTest: true,
+    //     depthWrite: true,
+    //     side: THREE.BackSide,
+    //     blending: THREE.NoBlending
+    // });
+    // mesh.customDistanceMaterial.isMeshDistanceMaterial = true;
 
-    mesh.motionMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-            u_prevModelViewMatrix: { type: 'm4', value: new THREE.Matrix4() },
-            u_motionMultiplier: { type: 'f', value: 1 },
-            texturePosition: { type: 't', value: undef },
-            texturePrevPosition: { type: 't', value: undef },
-            flipRatio: { type: 'f', value: 0 },
-            cameraMatrix: { type: 'm4', value: undef }
-        },
-        vertexShader: shaderParse(glslify('../glsl/trianglesMotion.vert')),
-        fragmentShader: shaderParse(glslify('./postprocessing/motionBlur/motionBlurMotion.frag')),
-        depthTest: true,
-        depthWrite: true,
-        side: THREE.DoubleSide,
-        blending: THREE.NoBlending
-    });
-    mesh.motionMaterial.motionMultiplier = 1;
-    mesh.motionMaterial.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
+    // mesh.motionMaterial = new THREE.ShaderMaterial({
+    //     uniforms: {
+    //         u_prevModelViewMatrix: { type: 'm4', value: new THREE.Matrix4() },
+    //         u_motionMultiplier: { type: 'f', value: 1 },
+    //         texturePosition: { type: 't', value: undef },
+    //         texturePrevPosition: { type: 't', value: undef },
+    //         flipRatio: { type: 'f', value: 0 },
+    //         cameraMatrix: { type: 'm4', value: undef }
+    //     },
+    //     vertexShader: shaderParse(glslify('../glsl/trianglesMotion.vert')),
+    //     fragmentShader: shaderParse(glslify('./postprocessing/motionBlur/motionBlurMotion.frag')),
+    //     depthTest: true,
+    //     depthWrite: true,
+    //     side: THREE.DoubleSide,
+    //     blending: THREE.NoBlending
+    // });
+    // mesh.motionMaterial.motionMultiplier = 1;
+    // mesh.motionMaterial.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
     
     mesh.castShadow = true;
     mesh.receiveShadow = true;
@@ -214,13 +214,13 @@ function update(dt) {
 
         // Set the correct texture positions for each orb
         mesh.material.uniforms.texturePosition.value = texture;
-        mesh.customDistanceMaterial.uniforms.texturePosition.value = texture;
-        mesh.motionMaterial.uniforms.texturePosition.value = texture;
+        // mesh.customDistanceMaterial.uniforms.texturePosition.value = texture;
+        // mesh.motionMaterial.uniforms.texturePosition.value = texture;
 
-        if (mesh.material.uniforms.flipRatio) {
-            mesh.material.uniforms.flipRatio.value ^= 1;
-            mesh.customDistanceMaterial.uniforms.flipRatio.value ^= 1;
-            mesh.motionMaterial.uniforms.flipRatio.value ^= 1;
-        }
+        // if (mesh.material.uniforms.flipRatio) {
+        //     mesh.material.uniforms.flipRatio.value ^= 1;
+        //     mesh.customDistanceMaterial.uniforms.flipRatio.value ^= 1;
+        //     mesh.motionMaterial.uniforms.flipRatio.value ^= 1;
+        // }
     });
 }
