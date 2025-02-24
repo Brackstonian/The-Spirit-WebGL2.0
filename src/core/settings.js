@@ -111,10 +111,10 @@ exports.motionBlurQualityList = keys(motionBlurQualityMap);
 query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
 
 // Optimize post-processing for mobile
-exports.motionBlur = screenCategory !== 'mobile' && (resultPerformance < 40);
+exports.motionBlur = screenCategory !== 'mobile' && (resultPerformance < 15);
 exports.motionBlurPause = false;
 // exports.bloom = screenCategory !== 'mobile';
-exports.bloom = (screenCategory !== 'mobile') && (resultPerformance < 40);
+exports.bloom = (screenCategory !== 'mobile') && (resultPerformance < 20);
 exports.fxaa = screenCategory !== 'mobile' && (resultPerformance < 40);
 
 

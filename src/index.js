@@ -206,9 +206,9 @@ function _render(dt, newTime) {
     simulator.update(dt);
     particles.update(dt);
 
+    motionBlur.enabled = false; 
     if (settings.isMobile) {
         fxaa.enabled = false;
-        motionBlur.enabled = false;
         bloom.enabled = false;
     }
 
