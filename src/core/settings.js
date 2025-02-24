@@ -130,8 +130,10 @@ const calcGPUPerformance = (iterations = 10) => {
 calcGPUPerformance().then((gpuTime) => { 
     if (gpuTime && gpuTime < 150) {
         exports.motionBlur = true;
+        exports.bloom = true;
     } else {
         exports.motionBlur = false;
+        exports.bloom = false;
     }
     console.log(
         'screenCategory:',
@@ -232,5 +234,5 @@ query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality]
 // Optimize post-processing for mobile
 exports.motionBlurPause = false;
 // exports.bloom = screenCategory !== 'mobile';
-exports.bloom = screenCategory !== 'mobile' && resultPerformance < 20;
+// exports.bloom = screenCategory !== 'mobile' && resultPerformance < 20;
 exports.fxaa = screenCategory !== 'mobile' && resultPerformance < 40;

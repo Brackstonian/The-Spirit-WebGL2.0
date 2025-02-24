@@ -125,6 +125,7 @@ function startWebGLAnimation() {
     settings.isAnimating = true;
     _time = performance.now();
     requestAnimationFrame(_loop);
+    _renderer.domElement.parentNode.style.visiblity = "visible";
 }
 
 function stopWebGLAnimation() {
@@ -133,7 +134,7 @@ function stopWebGLAnimation() {
     settings.isAnimating = false;
 
     if (_renderer && _renderer.domElement && _renderer.domElement.parentNode) {
-        _renderer.domElement.parentNode.removeChild(_renderer.domElement);
+        _renderer.domElement.parentNode.style.visiblity = "hidden";
     }
 }
 
