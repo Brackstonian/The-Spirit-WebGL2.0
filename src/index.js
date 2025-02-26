@@ -26,6 +26,11 @@ let _animating = false;
 let _clearHex = 0;
 
 function init(container) {
+    if (_renderer) {
+        console.warn("Already initialized.");
+        return;
+    }
+    
     settings.isMobile ??= /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     settings.isAnimating ??= true;
     
@@ -119,19 +124,20 @@ function init(container) {
     }
 }
 
+
 function startWebGLAnimation() {
+    console.log("Starting WebGL animation...");
     _animating = true;
     settings.isAnimating = true;
     _time = performance.now();
     requestAnimationFrame(_loop);
-    _renderer.domElement.parentNode.style.visiblity = "visible";
 }
 
 function stopWebGLAnimation() {
+    console.log("Stopping WebGL animation...");
     _animating = false;
     settings.isAnimating = false;
 }
-
 function takeScreenshot() {
     return _renderer.domElement.toDataURL('image/png');
 }
