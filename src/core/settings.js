@@ -161,7 +161,7 @@ if (screenWidth <= 394) {
 } else if (screenWidth <= 768) {
     screenCategory = 'tablet';
     exports.particleAmount = 3000;
-} else if (screenWidth <= 1024) {
+} else if (screenWidth <= 1032) {
     screenCategory = 'ipadPro';
     exports.particleAmount = 10000;
 } else {
