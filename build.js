@@ -35,8 +35,8 @@ function runBuild(f) {
       if (err) return reject(err);
       console.log('Compressing', f);
       var result = UglifyJS.minify(src.toString(), {
-        compress: false,
-        mangle: false
+        compress: true,
+        mangle: true
       });
       if (result.error) return reject(result.error);
       console.log('Writing', f);
