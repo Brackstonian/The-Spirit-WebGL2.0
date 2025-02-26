@@ -120,7 +120,6 @@ function init(container) {
 }
 
 function startWebGLAnimation() {
-    console.log("Starting WebGL animation...");
     _animating = true;
     settings.isAnimating = true;
     _time = performance.now();
@@ -129,13 +128,8 @@ function startWebGLAnimation() {
 }
 
 function stopWebGLAnimation() {
-    console.log("Stopping WebGL animation...");
     _animating = false;
     settings.isAnimating = false;
-
-    if (_renderer && _renderer.domElement && _renderer.domElement.parentNode) {
-        _renderer.domElement.parentNode.style.visiblity = "hidden";
-    }
 }
 
 function takeScreenshot() {
