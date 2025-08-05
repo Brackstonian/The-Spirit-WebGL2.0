@@ -67,17 +67,13 @@ function init() {
     _renderer = new THREE.WebGLRenderer({
         // transparent : true,
         // premultipliedAlpha : false,
-        antialias : !settings.isMobile
+        antialias : true
     });
     _renderer.setClearColor(settings.bgColor);
     _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     _renderer.shadowMap.enabled = true;
-    document.currentScript.parentElement.appendChild(_renderer.domElement);
-	css(_renderer.domElement.parentElement,
-	{
-		overflow: 'hidden'
-	});
-	
+    document.body.appendChild(_renderer.domElement);
+
     _scene = new THREE.Scene();
     _scene.fog = new THREE.FogExp2( settings.bgColor, 0.001 );
 
@@ -96,8 +92,6 @@ function init() {
     lights.init(_renderer);
     _scene.add(lights.mesh);
 
-	_scene.add( new THREE.PointLightHelper(lights.pointLight ) );
-
     floor.init(_renderer);
     floor.mesh.position.y = -100;
     _scene.add(floor.mesh);
@@ -110,82 +104,81 @@ function init() {
     _control.noPan = true;
     _control.update();
 
+    _gui = new dat.GUI();
 
-    // _gui = new dat.GUI();
+    if(settings.isMobile) {
+        _gui.close();
+        _control.enabled = false;
+    }
 
-    // if(settings.isMobile) {
-        // _gui.close();
-        // _control.enabled = false;
-    // }
+    var simulatorGui = _gui.addFolder('Simulator');
+    simulatorGui.add(settings.query, 'amount', settings.amountList).onChange(function(){
+        if (confirm('It will restart the demo')) {
+            window.location.href = window.location.href.split('#')[0] + encode(settings.query).replace('?', '#');
+            window.location.reload();
+        }
+    });
+    simulatorGui.add(settings, 'speed', 0, 3).listen();
+    simulatorGui.add(settings, 'dieSpeed', 0.0005, 0.05).listen();
+    simulatorGui.add(settings, 'radius', 0.2, 3);
+    simulatorGui.add(settings, 'curlSize', 0.001, 0.05).listen();
+    simulatorGui.add(settings, 'attraction', -2, 2);
+    simulatorGui.add(settings, 'followMouse').name('follow mouse');
+    simulatorGui.open();
 
-    // var simulatorGui = _gui.addFolder('Simulator');
-    // simulatorGui.add(settings.query, 'amount', settings.amountList).onChange(function(){
-        // if (confirm('It will restart the demo')) {
-            // window.location.href = window.location.href.split('#')[0] + encode(settings.query).replace('?', '#');
-            // window.location.reload();
-        // }
-    // });
-    // simulatorGui.add(settings, 'speed', 0, 3).listen();
-    // simulatorGui.add(settings, 'dieSpeed', 0.0005, 0.05).listen();
-    // simulatorGui.add(settings, 'radius', 0.2, 3);
-    // simulatorGui.add(settings, 'curlSize', 0.001, 0.05).listen();
-    // simulatorGui.add(settings, 'attraction', -2, 2);
-    // simulatorGui.add(settings, 'followMouse').name('follow mouse');
-    // simulatorGui.open();
-
-    // var renderingGui = _gui.addFolder('Rendering');
-    // renderingGui.add(settings, 'shadowDarkness', 0, 1).name('shadow');
-    // renderingGui.add(settings, 'useTriangleParticles').name('new particle');
-    // renderingGui.addColor(settings, 'color1').name('base Color');
-    // renderingGui.addColor(settings, 'color2').name('fade Color');
-    // renderingGui.addColor(settings, 'bgColor').name('background Color');
-    // renderingGui.open();
+    var renderingGui = _gui.addFolder('Rendering');
+    renderingGui.add(settings, 'shadowDarkness', 0, 1).name('shadow');
+    renderingGui.add(settings, 'useTriangleParticles').name('new particle');
+    renderingGui.addColor(settings, 'color1').name('base Color');
+    renderingGui.addColor(settings, 'color2').name('fade Color');
+    renderingGui.addColor(settings, 'bgColor').name('background Color');
+    renderingGui.open();
 
 
-    // var postprocessingGui = _gui.addFolder('Post-Processing');
-    // postprocessingGui.add(settings, 'fxaa').listen();
-    // motionBlur.maxDistance = 120;
-    // motionBlur.motionMultiplier = 7 ;
-    // motionBlur.linesRenderTargetScale = settings.motionBlurQualityMap[settings.query.motionBlurQuality];
-    // var motionBlurControl = postprocessingGui.add(settings, 'motionBlur');
-    // var motionMaxDistance = postprocessingGui.add(motionBlur, 'maxDistance', 1, 300).name('motion distance').listen();
-    // var motionMultiplier = postprocessingGui.add(motionBlur, 'motionMultiplier', 0.1, 15).name('motion multiplier').listen();
-    // var motionQuality = postprocessingGui.add(settings.query, 'motionBlurQuality', settings.motionBlurQualityList).name('motion quality').onChange(function(val){
-        // motionBlur.linesRenderTargetScale = settings.motionBlurQualityMap[val];
-        // motionBlur.resize();
-    // });
-    // var controlList = [motionMaxDistance, motionMultiplier, motionQuality];
-    // motionBlurControl.onChange(enableGuiControl.bind(this, controlList));
-    // enableGuiControl(controlList, settings.motionBlur);
+    var postprocessingGui = _gui.addFolder('Post-Processing');
+    postprocessingGui.add(settings, 'fxaa').listen();
+    motionBlur.maxDistance = 120;
+    motionBlur.motionMultiplier = 7 ;
+    motionBlur.linesRenderTargetScale = settings.motionBlurQualityMap[settings.query.motionBlurQuality];
+    var motionBlurControl = postprocessingGui.add(settings, 'motionBlur');
+    var motionMaxDistance = postprocessingGui.add(motionBlur, 'maxDistance', 1, 300).name('motion distance').listen();
+    var motionMultiplier = postprocessingGui.add(motionBlur, 'motionMultiplier', 0.1, 15).name('motion multiplier').listen();
+    var motionQuality = postprocessingGui.add(settings.query, 'motionBlurQuality', settings.motionBlurQualityList).name('motion quality').onChange(function(val){
+        motionBlur.linesRenderTargetScale = settings.motionBlurQualityMap[val];
+        motionBlur.resize();
+    });
+    var controlList = [motionMaxDistance, motionMultiplier, motionQuality];
+    motionBlurControl.onChange(enableGuiControl.bind(this, controlList));
+    enableGuiControl(controlList, settings.motionBlur);
 
-    // var bloomControl = postprocessingGui.add(settings, 'bloom');
-    // var bloomRadiusControl = postprocessingGui.add(bloom, 'blurRadius', 0, 3).name('bloom radius');
-    // var bloomAmountControl = postprocessingGui.add(bloom, 'amount', 0, 3).name('bloom amount');
-    // controlList = [bloomRadiusControl, bloomAmountControl];
-    // bloomControl.onChange(enableGuiControl.bind(this, controlList));
-    // enableGuiControl(controlList, settings.bloom);
-    // postprocessingGui.open();
+    var bloomControl = postprocessingGui.add(settings, 'bloom');
+    var bloomRadiusControl = postprocessingGui.add(bloom, 'blurRadius', 0, 3).name('bloom radius');
+    var bloomAmountControl = postprocessingGui.add(bloom, 'amount', 0, 3).name('bloom amount');
+    controlList = [bloomRadiusControl, bloomAmountControl];
+    bloomControl.onChange(enableGuiControl.bind(this, controlList));
+    enableGuiControl(controlList, settings.bloom);
+    postprocessingGui.open();
 
-    // function enableGuiControl(controls, flag) {
-        // controls = controls.length ? controls : [controls];
-        // var control;
-        // for(var i = 0, len = controls.length; i < len; i++) {
-            // control = controls[i];
-            // control.__li.style.pointerEvents = flag ? 'auto' : 'none';
-            // control.domElement.parentNode.style.opacity = flag ? 1 : 0.1;
-        // }
-    // }
+    function enableGuiControl(controls, flag) {
+        controls = controls.length ? controls : [controls];
+        var control;
+        for(var i = 0, len = controls.length; i < len; i++) {
+            control = controls[i];
+            control.__li.style.pointerEvents = flag ? 'auto' : 'none';
+            control.domElement.parentNode.style.opacity = flag ? 1 : 0.1;
+        }
+    }
 
-    // var preventDefault = function(evt){evt.preventDefault();this.blur();};
-    // Array.prototype.forEach.call(_gui.domElement.querySelectorAll('input[type="checkbox"],select'), function(elem){
-        // elem.onkeyup = elem.onkeydown = preventDefault;
-        // elem.style.color = '#000';
-    // }); 
+    var preventDefault = function(evt){evt.preventDefault();this.blur();};
+    Array.prototype.forEach.call(_gui.domElement.querySelectorAll('input[type="checkbox"],select'), function(elem){
+        elem.onkeyup = elem.onkeydown = preventDefault;
+        elem.style.color = '#000';
+    });
 
-    //_logo = document.querySelector('.logo');
-    //_instruction = document.querySelector('.instruction');
-    //document.querySelector('.footer').style.display = 'block';
-    //_footerItems = document.querySelectorAll('.footer span');
+    _logo = document.querySelector('.logo');
+    _instruction = document.querySelector('.instruction');
+    document.querySelector('.footer').style.display = 'block';
+    _footerItems = document.querySelectorAll('.footer span');
 
     window.addEventListener('resize', _onResize);
     window.addEventListener('mousemove', _onMove);
@@ -215,15 +208,16 @@ function _bindTouch(func) {
 }
 
 function _onMove(evt) {
-    settings.mouse.x = (evt.clientX / _width) * 2 - 1;
-    settings.mouse.y = (-evt.clientY / _height) * 2 + 1;
+    settings.mouse.x = (evt.pageX / _width) * 2 - 1;
+    settings.mouse.y = -(evt.pageY / _height) * 2 + 1;
 }
 
 function _onResize() {
     _width = window.innerWidth;
-	_height = window.innerHeight;
+    _height = window.innerHeight;
 
     postprocessing.resize(_width, _height);
+
 }
 
 function _loop() {
@@ -243,8 +237,7 @@ function _render(dt, newTime) {
     var ratio;
     _bgColor.setStyle(settings.bgColor);
     var tmpColor = floor.mesh.material.color;
-    //tmpColor.lerp(_bgColor, 0.05);
-	tmpColor = _bgColor;
+    tmpColor.lerp(_bgColor, 0.05);
     _scene.fog.color.copy(tmpColor);
     _renderer.setClearColor(tmpColor.getHex());
 
@@ -266,31 +259,31 @@ function _render(dt, newTime) {
 
     ratio = Math.min((1 - Math.abs(_initAnimation - 0.5) * 2) * 1.2, 1);
     var blur = (1 - ratio) * 10;
-    //_logo.style.display = ratio ? 'block' : 'none';
+    _logo.style.display = ratio ? 'block' : 'none';
     if(ratio) {
-        //_logo.style.opacity = ratio;
-        //_logo.style.webkitFilter = 'blur(' + blur + 'px)';
+        _logo.style.opacity = ratio;
+        _logo.style.webkitFilter = 'blur(' + blur + 'px)';
         ratio = (0.8 + Math.pow(_initAnimation, 1.5) * 0.5);
         if(_width < 580) ratio *= 0.5;
-        //_logo.style.transform = 'scale3d(' + ratio + ',' + ratio + ',1)';
+        _logo.style.transform = 'scale3d(' + ratio + ',' + ratio + ',1)';
     }
 
-    //for(var i = 0, len = _footerItems.length; i < len; i++) {
-        //ratio = math.unLerp(0.5 + i * 0.01, 0.6 + i * 0.01, _initAnimation);
-        //_footerItems[i].style.transform = 'translate3d(0,' + ((1 - Math.pow(ratio, 3)) * 50) + 'px,0)';
-    //}
+    for(var i = 0, len = _footerItems.length; i < len; i++) {
+        ratio = math.unLerp(0.5 + i * 0.01, 0.6 + i * 0.01, _initAnimation);
+        _footerItems[i].style.transform = 'translate3d(0,' + ((1 - Math.pow(ratio, 3)) * 50) + 'px,0)';
+    }
 
     ratio = math.unLerp(0.5, 0.6, _initAnimation);
     if(!settings.isMobile) {
-        //_instruction.style.display = ratio ? 'block' : 'none';
-        //_instruction.style.transform = 'translate3d(0,' + ((1 - ratio * ratio) * 50) + 'px,0)';
+        _instruction.style.display = ratio ? 'block' : 'none';
+        _instruction.style.transform = 'translate3d(0,' + ((1 - ratio * ratio) * 50) + 'px,0)';
     }
 
     fxaa.enabled = !!settings.fxaa;
     motionBlur.enabled = !!settings.motionBlur;
     bloom.enabled = !!settings.bloom;
 
-    //_renderer.render(_scene, _camera);
+    // _renderer.render(_scene, _camera);
     postprocessing.render(dt, newTime);
 
 }

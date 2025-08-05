@@ -20,24 +20,24 @@ var amountMap = {
 };
 
 exports.amountList = keys(amountMap);
-query.amount = amountMap[query.amount] ? query.amount : exports.isMobile ? '16k' : '65k';
+query.amount = amountMap[query.amount] ? query.amount : '65k';
 var amountInfo = amountMap[query.amount];
 exports.simulatorTextureWidth = amountInfo[0];
 exports.simulatorTextureHeight = amountInfo[1];
 
 exports.useTriangleParticles = true;
-exports.followMouse = !exports.isMobile;
+exports.followMouse = true;
 
 exports.speed = 1;
 exports.dieSpeed = 0.015;
-exports.radius = amountInfo[2] * 1.3;
+exports.radius = amountInfo[2];
 exports.curlSize = 0.02;
 exports.attraction = 1;
-exports.shadowDarkness = 1.00;
+exports.shadowDarkness = 0.45;
 
-exports.bgColor = '#000000';
-exports.color1 = '#3f3f3f';
-exports.color2 = '#303030';
+exports.bgColor = '#343434';
+exports.color1 = '#ffffff';
+exports.color2 = '#ffffff';
 
 exports.fxaa = false;
 var motionBlurQualityMap = exports.motionBlurQualityMap = {
@@ -48,6 +48,6 @@ var motionBlurQualityMap = exports.motionBlurQualityMap = {
 };
 exports.motionBlurQualityList = keys(motionBlurQualityMap);
 query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
-exports.motionBlur = false;
+exports.motionBlur = true;
 exports.motionBlurPause = false;
-exports.bloom = false;
+exports.bloom = true;

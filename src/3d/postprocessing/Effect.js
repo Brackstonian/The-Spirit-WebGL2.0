@@ -58,7 +58,7 @@ function resize(width, height) {
 
 function render(dt, renderTarget, toScreen) {
 
-    this.uniforms.u_texture.value = renderTarget.texture;
+    this.uniforms.u_texture.value = renderTarget;
     this.uniforms.u_aspect.value = this.uniforms.u_resolution.value.x / this.uniforms.u_resolution.value.y;
 
     return effectComposer.render(this.material, toScreen);

@@ -13,7 +13,7 @@ var _super = Effect.prototype;
 exports.init = init;
 exports.render = render;
 
-exports.blurRadius = 3.0;
+exports.blurRadius = 1.3;
 exports.amount = 0.3;
 
 var _blurMaterial;
@@ -49,17 +49,17 @@ function render(dt, renderTarget, toScreen) {
     effectComposer.releaseRenderTarget(tmpRenderTarget1, tmpRenderTarget2);
 
     var blurRadius = exports.blurRadius;
-    _blurMaterial.uniforms.u_texture.value = renderTarget.texture;
+    _blurMaterial.uniforms.u_texture.value = renderTarget;
     _blurMaterial.uniforms.u_delta.value.set(blurRadius / effectComposer.resolution.x, 0);
 
     fboHelper.render(_blurMaterial, tmpRenderTarget1);
 
     blurRadius = exports.blurRadius;
-    _blurMaterial.uniforms.u_texture.value = tmpRenderTarget1.texture;
+    _blurMaterial.uniforms.u_texture.value = tmpRenderTarget1;
     _blurMaterial.uniforms.u_delta.value.set(0, blurRadius / effectComposer.resolution.y);
     fboHelper.render(_blurMaterial, tmpRenderTarget2);
 
-    this.uniforms.u_blurTexture.value = tmpRenderTarget2.texture;
+    this.uniforms.u_blurTexture.value = tmpRenderTarget2;
     this.uniforms.u_amount.value = exports.amount;
     _super.render.call(this, dt, renderTarget, toScreen);
 

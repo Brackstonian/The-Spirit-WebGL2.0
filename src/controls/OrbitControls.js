@@ -28,7 +28,7 @@ THREE.OrbitControls = function ( object, domElement ) {
     this.zoomEaseRatio = 0.05;
 
     // Set to false to disable this control
-    this.enabled = false;
+    this.enabled = true;
 
     // "target" sets the location of focus, where the control orbits around
     // and where it pans with respect to.
@@ -126,7 +126,7 @@ THREE.OrbitControls = function ( object, domElement ) {
     // so camera.up is the orbit axis
 
     var quat = new THREE.Quaternion().setFromUnitVectors( object.up, new THREE.Vector3( 0, 1, 0 ) );
-    var quatInverse = quat.clone().invert();
+    var quatInverse = quat.clone().inverse();
 
     // events
 
@@ -327,10 +327,6 @@ THREE.OrbitControls = function ( object, domElement ) {
         position.copy( this.target ).add( offset );
 
         this.object.lookAt( this.target );
-
-		this.object.position.x = 319.0;
-		this.object.position.y = 45.0;
-		this.object.position.z = 319.0;
 
         thetaDelta -= thetaDeltaBit;
         phiDelta -= phiDeltaBit;

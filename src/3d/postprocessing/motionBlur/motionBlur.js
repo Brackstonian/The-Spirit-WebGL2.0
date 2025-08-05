@@ -59,9 +59,9 @@ var _height;
 function init(sampleCount) {
 
     var gl = effectComposer.renderer.getContext();
-    // if(!gl.getExtension('OES_texture_float') || !gl.getExtension('OES_texture_float_linear')) {
-		// alert('no float linear support');
-    //}
+    if(!gl.getExtension('OES_texture_float') || !gl.getExtension('OES_texture_float_linear')) {
+        alert('no float linear support');
+    }
 
     _motionRenderTarget = fboHelper.createRenderTarget(1, 1, THREE.RGBAFormat, THREE.FloatType);
     _motionRenderTarget.depthBuffer = true;
@@ -74,7 +74,7 @@ function init(sampleCount) {
     _super.init.call(this, {
         uniforms: {
             u_lineAlphaMultiplier: { type: 'f', value: 1 },
-            u_linesTexture: { type: 't', value: _linesRenderTarget.texture }
+            u_linesTexture: { type: 't', value: _linesRenderTarget }
             // u_motionTexture: { type: 't', value: _motionRenderTarget }
         },
         fragmentShader: glslify('./motionBlur.frag')
@@ -85,7 +85,7 @@ function init(sampleCount) {
     _linesMaterial = new THREE.RawShaderMaterial({
         uniforms: {
             u_texture: { type: 't', value: undef },
-            u_motionTexture: { type: 't', value: _motionRenderTarget.texture },
+            u_motionTexture: { type: 't', value: _motionRenderTarget },
             u_resolution: { type: 'v2', value: effectComposer.resolution },
             u_maxDistance: { type: 'f', value: 1 },
             u_jitter: { type: 'f', value: 0.3 },
@@ -116,7 +116,7 @@ function init(sampleCount) {
     _samplingMaterial = new THREE.RawShaderMaterial({
         uniforms: {
             u_texture: { type: 't', value: undef },
-            u_motionTexture: { type: 't', value: _motionRenderTarget.texture },
+            u_motionTexture: { type: 't', value: _motionRenderTarget },
             u_resolution: { type: 'v2', value: effectComposer.resolution },
             u_maxDistance: { type: 'f', value: 1 },
             u_fadeStrength: { type: 'f', value: 1 },
@@ -157,8 +157,8 @@ function resize(width, height) {
         if(amount > currentLen) {
             _linesPositions = new Float32Array(amount * 6);
             _linesPositionAttribute = new THREE.BufferAttribute(_linesPositions, 3);
-            //_linesGeometry.removeAttribute('position');
-            _linesGeometry.setAttribute( 'position', _linesPositionAttribute );
+            _linesGeometry.removeAttribute('position');
+            _linesGeometry.addAttribute( 'position', _linesPositionAttribute );
         }
         var i6 = 0;
         var x, y;
@@ -205,16 +205,14 @@ function render(dt, renderTarget, toScreen) {
 
     var state = fboHelper.getColorState();
     effectComposer.renderer.setClearColor(0, 1);
-    effectComposer.renderer.setRenderTarget(_motionRenderTarget);
-	effectComposer.renderer.clear();
-	effectComposer.renderer.setRenderTarget(null);
-	
-     effectComposer.scene.traverseVisible(_setObjectBeforeState);
-     effectComposer.renderScene(_motionRenderTarget);
-     for(var i = 0, len = _visibleCache.length; i < len; i++) {
-		 _setObjectAfterState(_visibleCache[i]);
-     }
-     _visibleCache = [];
+    effectComposer.renderer.clearTarget(_motionRenderTarget, true);
+
+    effectComposer.scene.traverseVisible(_setObjectBeforeState);
+    effectComposer.renderScene(_motionRenderTarget);
+    for(var i = 0, len = _visibleCache.length; i < len; i++) {
+        _setObjectAfterState(_visibleCache[i]);
+    }
+    _visibleCache = [];
 
     if(!useSampling) {
         _linesMaterial.uniforms.u_maxDistance.value = exports.maxDistance;
@@ -225,13 +223,11 @@ function render(dt, renderTarget, toScreen) {
         _linesMaterial.uniforms.u_opacity.value = exports.opacity;
         _linesMaterial.uniforms.u_leaning.value = Math.max(0.001, Math.min(0.999, exports.leaning));
         _linesMaterial.uniforms.u_depthBias.value = Math.max(0.00001, exports.depthBias);
-        _linesMaterial.uniforms.u_texture.value = renderTarget.texture;
+        _linesMaterial.uniforms.u_texture.value = renderTarget;
 
         effectComposer.renderer.setClearColor(0, 0);
-        effectComposer.renderer.setRenderTarget(_linesRenderTarget);
-		effectComposer.renderer.clear();
-        effectComposer.renderer.render(_linesScene, _linesCamera);
-		effectComposer.renderer.setRenderTarget(null);
+        effectComposer.renderer.clearTarget(_linesRenderTarget, true);
+        effectComposer.renderer.render(_linesScene, _linesCamera, _linesRenderTarget);
     }
 
     fboHelper.setColorState(state);
@@ -241,7 +237,7 @@ function render(dt, renderTarget, toScreen) {
         _samplingMaterial.uniforms.u_fadeStrength.value = exports.fadeStrength;
         _samplingMaterial.uniforms.u_motionMultiplier.value = exports.motionMultiplier * fpsRatio;
         _samplingMaterial.uniforms.u_leaning.value = Math.max(0.001, Math.min(0.999, exports.leaning));
-        _samplingMaterial.uniforms.u_texture.value = renderTarget.texture;
+        _samplingMaterial.uniforms.u_texture.value = renderTarget;
 
         effectComposer.render(_samplingMaterial, toScreen);
     } else {

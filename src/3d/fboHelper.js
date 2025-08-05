@@ -41,7 +41,7 @@ function init(renderer) {
         fragmentShader: rawShaderPrefix + glslify('./quad.frag')
     });
 
-    _mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), copyMaterial );
+    _mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), copyMaterial );
     _scene.add( _mesh );
 
 }
@@ -50,9 +50,7 @@ function copy(inputTexture, ouputTexture) {
     _mesh.material = copyMaterial;
     copyMaterial.uniforms.u_texture.value = inputTexture;
     if(ouputTexture) {
-		_renderer.setRenderTarget(ouputTexture);
-        _renderer.render( _scene, _camera );
-		_renderer.setRenderTarget(null);
+        _renderer.render( _scene, _camera, ouputTexture );
     } else {
         _renderer.render( _scene, _camera );
     }
@@ -60,9 +58,7 @@ function copy(inputTexture, ouputTexture) {
 function render(material, renderTarget) {
     _mesh.material = material;
     if(renderTarget) {
-		_renderer.setRenderTarget(renderTarget);
-        _renderer.render( _scene, _camera );
-		_renderer.setRenderTarget(null);
+        _renderer.render( _scene, _camera, renderTarget );
     } else {
         _renderer.render( _scene, _camera );
     }
@@ -86,7 +82,7 @@ function createRenderTarget(width, height, format, type, minFilter, magFilter) {
 function getColorState() {
     return {
         autoClearColor : _renderer.autoClearColor,
-        clearColor : _renderer.getClearColor(new THREE.Color()).getHex(),
+        clearColor : _renderer.getClearColor().getHex(),
         clearAlpha : _renderer.getClearAlpha()
     };
 }

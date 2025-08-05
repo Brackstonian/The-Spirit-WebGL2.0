@@ -13,7 +13,7 @@ function MeshMotionMaterial ( parameters ) {
     var fragmentShader = shaderParse(glslify('./motionBlurMotion.frag'));
     this.motionMultiplier = parameters.motionMultiplier || 1;
 
-    return new THREE.ShaderMaterial(mixIn({
+    THREE.ShaderMaterial.call( this, mixIn({
 
         uniforms: fillIn(uniforms, {
             u_prevModelViewMatrix: {type: 'm4', value: new THREE.Matrix4()},
