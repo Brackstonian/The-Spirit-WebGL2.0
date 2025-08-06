@@ -82,7 +82,7 @@ function init(renderer) {
         depthTest: false
     });
 
-    _mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), _copyShader );
+    _mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), _copyShader );
     _scene.add( _mesh );
 
     _positionRenderTarget = new THREE.WebGLRenderTarget(TEXTURE_WIDTH, TEXTURE_HEIGHT, {

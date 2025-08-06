@@ -41,7 +41,7 @@ function init(renderer) {
         fragmentShader: rawShaderPrefix + glslify('./quad.frag')
     });
 
-    _mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), copyMaterial );
+    _mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), copyMaterial );
     _scene.add( _mesh );
 
 }
