@@ -9,14 +9,14 @@ Promise.all(['index.js'].map(runBuild)).catch(function (err) {
   console.log("Finished");
 });
 
-function runBuild (f) {
+function runBuild(f) {
   return new Promise(function (resolve, reject) {
     console.log('Bundling', f);
     var b = browserify('src/' + f, {
       debug: false,
-      // noparse: [ 'three' ]
+      standalone: 'initThreeExperiment' // <<---- ADD THIS
     });
-    // b.transform(require('babelify').configure({ presets: 'es2015' }));
+    b.transform(require('babelify').configure({ presets: ['@babel/preset-env'] }));
     b.plugin(require('bundle-collapser/plugin'));
     var transforms = [['glslify', { global: true }]];
     transforms.forEach(function (t) {

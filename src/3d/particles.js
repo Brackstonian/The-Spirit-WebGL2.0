@@ -24,13 +24,20 @@ var TEXTURE_WIDTH = settings.simulatorTextureWidth;
 var TEXTURE_HEIGHT = settings.simulatorTextureHeight;
 var AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
 
-function init(renderer) {
+var _getColor1 = function () { return settings.color1 }
+var _getColor2 = function () { return settings.color2 }
+
+
+
+function init(renderer, getColor1, getColor2) {
+    _getColor1 = getColor1 || function () { return settings.color1 }
+    _getColor2 = getColor2 || function () { return settings.color2 }
 
     container = exports.container = new THREE.Object3D();
 
     _tmpColor = new THREE.Color();
-    _color1 = new THREE.Color(settings.color1);
-    _color2 = new THREE.Color(settings.color2);
+    _color1 = new THREE.Color(_getColor1());
+    _color2 = new THREE.Color(_getColor2());
 
     _meshes = [
         _triangleMesh = _createTriangleMesh(),
@@ -232,11 +239,16 @@ function update(dt) {
     _triangleMesh.visible = settings.useTriangleParticles;
     _particleMesh.visible = !settings.useTriangleParticles;
 
-    _tmpColor.setStyle(settings.color1);
-    _color1.lerp(_tmpColor, 0.05);
+    // _tmpColor.setStyle(_getColor1());
+    // _color1.lerp(_tmpColor, 0.05);
 
-    _tmpColor.setStyle(settings.color2);
-    _color2.lerp(_tmpColor, 0.05);
+    _color1.setStyle(_getColor1());
+
+    // _tmpColor.setStyle(_getColor2());
+    // _color2.lerp(_tmpColor, 0.05);
+
+    _color2.setStyle(_getColor2());
+
 
     for(var i = 0; i < 2; i++) {
         mesh = _meshes[i];

@@ -26,7 +26,7 @@ exports.simulatorTextureWidth = amountInfo[0];
 exports.simulatorTextureHeight = amountInfo[1];
 
 exports.useTriangleParticles = true;
-exports.followMouse = true;
+exports.followMouse = false;
 
 exports.speed = 1;
 exports.dieSpeed = 0.015;
@@ -47,7 +47,7 @@ var motionBlurQualityMap = exports.motionBlurQualityMap = {
     low: 0.25
 };
 exports.motionBlurQualityList = keys(motionBlurQualityMap);
-query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
+query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'high';
 exports.motionBlur = true;
 exports.motionBlurPause = false;
 exports.bloom = true;
