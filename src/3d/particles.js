@@ -10,6 +10,7 @@ var undef;
 var container = exports.container = undef;
 exports.init = init;
 exports.update = update;
+exports.dispose = dispose;
 
 var _renderer;
 var _particleMesh;
@@ -26,8 +27,6 @@ var AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
 
 var _getColor1 = function () { return settings.color1 }
 var _getColor2 = function () { return settings.color2 }
-
-
 
 function init(renderer, getColor1, getColor2) {
     _getColor1 = getColor1 || function () { return settings.color1 }
@@ -47,20 +46,18 @@ function init(renderer, getColor1, getColor2) {
     _particleMesh.visible = false;
 
     _renderer = renderer;
-
 }
 
 function _createParticleMesh() {
-
     var position = new Float32Array(AMOUNT * 3);
     var i3;
-    for(var i = 0; i < AMOUNT; i++ ) {
+    for (var i = 0; i < AMOUNT; i++) {
         i3 = i * 3;
         position[i3 + 0] = (i % TEXTURE_WIDTH) / TEXTURE_WIDTH;
         position[i3 + 1] = ~~(i / TEXTURE_WIDTH) / TEXTURE_HEIGHT;
     }
     var geometry = new THREE.BufferGeometry();
-    geometry.addAttribute( 'position', new THREE.BufferAttribute( position, 3 ));
+    geometry.addAttribute('position', new THREE.BufferAttribute(position, 3));
 
     var material = new THREE.ShaderMaterial({
         uniforms: THREE.UniformsUtils.merge([
@@ -79,11 +76,11 @@ function _createParticleMesh() {
     material.uniforms.color1.value = _color1;
     material.uniforms.color2.value = _color2;
 
-    var mesh = new THREE.Points( geometry, material );
+    var mesh = new THREE.Points(geometry, material);
 
-    mesh.customDistanceMaterial = new THREE.ShaderMaterial( {
+    mesh.customDistanceMaterial = new THREE.ShaderMaterial({
         uniforms: {
-            lightPos: { type: 'v3', value: new THREE.Vector3( 0, 0, 0 ) },
+            lightPos: { type: 'v3', value: new THREE.Vector3(0, 0, 0) },
             texturePosition: { type: 't', value: undef }
         },
         vertexShader: shaderParse(glslify('../glsl/particlesDistance.vert')),
@@ -94,7 +91,7 @@ function _createParticleMesh() {
         blending: THREE.NoBlending
     });
 
-    mesh.motionMaterial = new MeshMotionMaterial( {
+    mesh.motionMaterial = new MeshMotionMaterial({
         uniforms: {
             texturePosition: { type: 't', value: undef },
             texturePrevPosition: { type: 't', value: undef }
@@ -114,7 +111,6 @@ function _createParticleMesh() {
 }
 
 function _createTriangleMesh() {
-
     var position = new Float32Array(AMOUNT * 3 * 3);
     var positionFlip = new Float32Array(AMOUNT * 3 * 3);
     var fboUV = new Float32Array(AMOUNT * 2 * 3);
@@ -122,60 +118,42 @@ function _createTriangleMesh() {
     var PI = Math.PI;
     var angle = PI * 2 / 3;
     var angles = [
-        Math.sin(angle * 2 + PI),
-        Math.cos(angle * 2 + PI),
-        Math.sin(angle + PI),
-        Math.cos(angle + PI),
-        Math.sin(angle * 3 + PI),
-        Math.cos(angle * 3 + PI),
-        Math.sin(angle * 2),
-        Math.cos(angle * 2),
-        Math.sin(angle),
-        Math.cos(angle),
-        Math.sin(angle * 3),
-        Math.cos(angle * 3)
-    ]
+        Math.sin(angle * 2 + PI), Math.cos(angle * 2 + PI),
+        Math.sin(angle + PI), Math.cos(angle + PI),
+        Math.sin(angle * 3 + PI), Math.cos(angle * 3 + PI),
+        Math.sin(angle * 2), Math.cos(angle * 2),
+        Math.sin(angle), Math.cos(angle),
+        Math.sin(angle * 3), Math.cos(angle * 3)
+    ];
     var i6, i9;
-    for(var i = 0; i < AMOUNT; i++ ) {
+    for (var i = 0; i < AMOUNT; i++) {
         i6 = i * 6;
         i9 = i * 9;
-        if(i % 2) {
-            position[ i9 + 0] = angles[0];
-            position[ i9 + 1] = angles[1];
-            position[ i9 + 3] = angles[2];
-            position[ i9 + 4] = angles[3];
-            position[ i9 + 6] = angles[4];
-            position[ i9 + 7] = angles[5];
+        if (i % 2) {
+            position[i9 + 0] = angles[0]; position[i9 + 1] = angles[1];
+            position[i9 + 3] = angles[2]; position[i9 + 4] = angles[3];
+            position[i9 + 6] = angles[4]; position[i9 + 7] = angles[5];
 
-            positionFlip[ i9 + 0] = angles[6];
-            positionFlip[ i9 + 1] = angles[7];
-            positionFlip[ i9 + 3] = angles[8];
-            positionFlip[ i9 + 4] = angles[9];
-            positionFlip[ i9 + 6] = angles[10];
-            positionFlip[ i9 + 7] = angles[11];
+            positionFlip[i9 + 0] = angles[6]; positionFlip[i9 + 1] = angles[7];
+            positionFlip[i9 + 3] = angles[8]; positionFlip[i9 + 4] = angles[9];
+            positionFlip[i9 + 6] = angles[10]; positionFlip[i9 + 7] = angles[11];
         } else {
-            positionFlip[ i9 + 0] = angles[0];
-            positionFlip[ i9 + 1] = angles[1];
-            positionFlip[ i9 + 3] = angles[2];
-            positionFlip[ i9 + 4] = angles[3];
-            positionFlip[ i9 + 6] = angles[4];
-            positionFlip[ i9 + 7] = angles[5];
+            positionFlip[i9 + 0] = angles[0]; positionFlip[i9 + 1] = angles[1];
+            positionFlip[i9 + 3] = angles[2]; positionFlip[i9 + 4] = angles[3];
+            positionFlip[i9 + 6] = angles[4]; positionFlip[i9 + 7] = angles[5];
 
-            position[ i9 + 0] = angles[6];
-            position[ i9 + 1] = angles[7];
-            position[ i9 + 3] = angles[8];
-            position[ i9 + 4] = angles[9];
-            position[ i9 + 6] = angles[10];
-            position[ i9 + 7] = angles[11];
+            position[i9 + 0] = angles[6]; position[i9 + 1] = angles[7];
+            position[i9 + 3] = angles[8]; position[i9 + 4] = angles[9];
+            position[i9 + 6] = angles[10]; position[i9 + 7] = angles[11];
         }
 
-        fboUV[ i6 + 0] = fboUV[ i6 + 2] = fboUV[ i6 + 4] = (i % TEXTURE_WIDTH) / TEXTURE_WIDTH;
-        fboUV[ i6 + 1 ] = fboUV[ i6 + 3 ] = fboUV[ i6 + 5 ] = ~~(i / TEXTURE_WIDTH) / TEXTURE_HEIGHT;
+        fboUV[i6 + 0] = fboUV[i6 + 2] = fboUV[i6 + 4] = (i % TEXTURE_WIDTH) / TEXTURE_WIDTH;
+        fboUV[i6 + 1] = fboUV[i6 + 3] = fboUV[i6 + 5] = ~~(i / TEXTURE_WIDTH) / TEXTURE_HEIGHT;
     }
     var geometry = new THREE.BufferGeometry();
-    geometry.addAttribute( 'position', new THREE.BufferAttribute( position, 3 ));
-    geometry.addAttribute( 'positionFlip', new THREE.BufferAttribute( positionFlip, 3 ));
-    geometry.addAttribute( 'fboUV', new THREE.BufferAttribute( fboUV, 2 ));
+    geometry.addAttribute('position', new THREE.BufferAttribute(position, 3));
+    geometry.addAttribute('positionFlip', new THREE.BufferAttribute(positionFlip, 3));
+    geometry.addAttribute('fboUV', new THREE.BufferAttribute(fboUV, 2));
 
     var material = new THREE.ShaderMaterial({
         uniforms: THREE.UniformsUtils.merge([
@@ -197,11 +175,11 @@ function _createTriangleMesh() {
     material.uniforms.color2.value = _color2;
     material.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
 
-    var mesh = new THREE.Mesh( geometry, material );
+    var mesh = new THREE.Mesh(geometry, material);
 
-    mesh.customDistanceMaterial = new THREE.ShaderMaterial( {
+    mesh.customDistanceMaterial = new THREE.ShaderMaterial({
         uniforms: {
-            lightPos: { type: 'v3', value: new THREE.Vector3( 0, 0, 0 ) },
+            lightPos: { type: 'v3', value: new THREE.Vector3(0, 0, 0) },
             texturePosition: { type: 't', value: undef },
             flipRatio: { type: 'f', value: 0 }
         },
@@ -213,7 +191,7 @@ function _createTriangleMesh() {
         blending: THREE.NoBlending
     });
 
-    mesh.motionMaterial = new MeshMotionMaterial( {
+    mesh.motionMaterial = new MeshMotionMaterial({
         uniforms: {
             texturePosition: { type: 't', value: undef },
             texturePrevPosition: { type: 't', value: undef },
@@ -234,31 +212,78 @@ function _createTriangleMesh() {
 }
 
 function update(dt) {
+
+    if (!simulator.positionRenderTarget || !simulator.prevPositionRenderTarget) {
+        if (!update._warnedOnce) {
+            console.warn('[particles] sim targets not ready yet');
+            update._warnedOnce = true;
+        }
+        return;
+    }
+
+    if (update._dbgCount === undefined) update._dbgCount = 0;
+
     var mesh;
 
     _triangleMesh.visible = settings.useTriangleParticles;
     _particleMesh.visible = !settings.useTriangleParticles;
 
-    // _tmpColor.setStyle(_getColor1());
-    // _color1.lerp(_tmpColor, 0.05);
-
     _color1.setStyle(_getColor1());
-
-    // _tmpColor.setStyle(_getColor2());
-    // _color2.lerp(_tmpColor, 0.05);
-
     _color2.setStyle(_getColor2());
 
-
-    for(var i = 0; i < 2; i++) {
+    for (var i = 0; i < 2; i++) {
         mesh = _meshes[i];
         mesh.material.uniforms.texturePosition.value = simulator.positionRenderTarget;
         mesh.customDistanceMaterial.uniforms.texturePosition.value = simulator.positionRenderTarget;
         mesh.motionMaterial.uniforms.texturePrevPosition.value = simulator.prevPositionRenderTarget;
-        if(mesh.material.uniforms.flipRatio ) {
+        if (mesh.material.uniforms.flipRatio) {
             mesh.material.uniforms.flipRatio.value ^= 1;
             mesh.customDistanceMaterial.uniforms.flipRatio.value ^= 1;
             mesh.motionMaterial.uniforms.flipRatio.value ^= 1;
         }
     }
+}
+
+function _disposeMaterial(mat) {
+    if (!mat) return;
+    try {
+        // dispose textures in uniforms if present
+        if (mat.uniforms) {
+            Object.keys(mat.uniforms).forEach(function (k) {
+                var v = mat.uniforms[k] && mat.uniforms[k].value;
+                if (v && typeof v.dispose === 'function') {
+                    try { v.dispose(); } catch (_) { }
+                }
+            });
+        }
+        mat.dispose && mat.dispose();
+    } catch (_) { }
+}
+
+function dispose() {
+    if (!container) return;
+
+    // remove and dispose meshes
+    [_particleMesh, _triangleMesh].forEach(function (m) {
+        if (!m) return;
+        try { container.remove(m); } catch (_) { }
+        try { m.geometry && m.geometry.dispose(); } catch (_) { }
+        _disposeMaterial(m.material);
+        _disposeMaterial(m.customDistanceMaterial);
+        _disposeMaterial(m.motionMaterial);
+    });
+
+    // finally drop container
+    try {
+        if (container.parent) container.parent.remove(container);
+    } catch (_) { }
+    container = exports.container = null;
+
+    _renderer = null;
+    _particleMesh = null;
+    _triangleMesh = null;
+    _meshes = null;
+    _color1 = null;
+    _color2 = null;
+    _tmpColor = null;
 }

@@ -25,25 +25,25 @@ var AMOUNT = exports.AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
 
 exports.init = init;
 exports.update = update;
+exports.dispose = dispose;
 exports.initAnimation = 0;
 
 exports.positionRenderTarget = undef;
 exports.prevPositionRenderTarget = undef;
 
 function init(renderer) {
-
     _renderer = renderer;
     _followPoint = new THREE.Vector3();
 
     var rawShaderPrefix = 'precision ' + renderer.capabilities.precision + ' float;\n';
 
     var gl = _renderer.getContext();
-    if ( !gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS) ) {
-        alert( 'No support for vertex shader textures!' );
+    if (!gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS)) {
+        alert('No support for vertex shader textures!');
         return;
     }
-    if ( !gl.getExtension( 'OES_texture_float' )) {
-        alert( 'No OES_texture_float support for float textures!' );
+    if (!gl.getExtension('OES_texture_float')) {
+        alert('No OES_texture_float support for float textures!');
         return;
     }
 
@@ -53,7 +53,7 @@ function init(renderer) {
 
     _copyShader = new THREE.RawShaderMaterial({
         uniforms: {
-            resolution: { type: 'v2', value: new THREE.Vector2( TEXTURE_WIDTH, TEXTURE_HEIGHT ) },
+            resolution: { type: 'v2', value: new THREE.Vector2(TEXTURE_WIDTH, TEXTURE_HEIGHT) },
             texture: { type: 't', value: undef }
         },
         vertexShader: rawShaderPrefix + shaderParse(glslify('../glsl/quad.vert')),
@@ -62,7 +62,7 @@ function init(renderer) {
 
     _positionShader = new THREE.RawShaderMaterial({
         uniforms: {
-            resolution: { type: 'v2', value: new THREE.Vector2( TEXTURE_WIDTH, TEXTURE_HEIGHT ) },
+            resolution: { type: 'v2', value: new THREE.Vector2(TEXTURE_WIDTH, TEXTURE_HEIGHT) },
             texturePosition: { type: 't', value: undef },
             textureDefaultPosition: { type: 't', value: undef },
             mouse3d: { type: 'v3', value: new THREE.Vector3 },
@@ -82,8 +82,8 @@ function init(renderer) {
         depthTest: false
     });
 
-    _mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), _copyShader );
-    _scene.add( _mesh );
+    _mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), _copyShader);
+    _scene.add(_mesh);
 
     _positionRenderTarget = new THREE.WebGLRenderTarget(TEXTURE_WIDTH, TEXTURE_HEIGHT, {
         wrapS: THREE.ClampToEdgeWrapping,
@@ -100,16 +100,17 @@ function init(renderer) {
     _copyTexture(_createPositionTexture(), _positionRenderTarget);
     _copyTexture(_positionRenderTarget, _positionRenderTarget2);
 
+    exports.positionRenderTarget = _positionRenderTarget;
+    exports.prevPositionRenderTarget = _positionRenderTarget2;
 }
 
 function _copyTexture(input, output) {
     _mesh.material = _copyShader;
     _copyShader.uniforms.texture.value = input;
-    _renderer.render( _scene, _camera, output );
+    _renderer.render(_scene, _camera, output);
 }
 
 function _updatePosition(dt) {
-
     // swap
     var tmp = _positionRenderTarget;
     _positionRenderTarget = _positionRenderTarget2;
@@ -119,16 +120,15 @@ function _updatePosition(dt) {
     _positionShader.uniforms.textureDefaultPosition.value = _textureDefaultPosition;
     _positionShader.uniforms.texturePosition.value = _positionRenderTarget2;
     _positionShader.uniforms.time.value += dt * 0.001;
-    _renderer.render( _scene, _camera, _positionRenderTarget );
+    _renderer.render(_scene, _camera, _positionRenderTarget);
 }
 
 function _createPositionTexture() {
-    var positions = new Float32Array( AMOUNT * 4 );
+    var positions = new Float32Array(AMOUNT * 4);
     var i4;
     var r, phi, theta;
-    for(var i = 0; i < AMOUNT; i++) {
+    for (var i = 0; i < AMOUNT; i++) {
         i4 = i * 4;
-        // r = (0.5 + Math.pow(Math.random(), 0.4) * 0.5) * 50;
         r = (0.5 + Math.random() * 0.5) * 50;
         phi = (Math.random() - 0.5) * Math.PI;
         theta = Math.random() * Math.PI * 2;
@@ -137,7 +137,7 @@ function _createPositionTexture() {
         positions[i4 + 2] = r * Math.sin(theta) * Math.cos(phi);
         positions[i4 + 3] = Math.random();
     }
-    var texture = new THREE.DataTexture( positions, TEXTURE_WIDTH, TEXTURE_HEIGHT, THREE.RGBAFormat, THREE.FloatType );
+    var texture = new THREE.DataTexture(positions, TEXTURE_WIDTH, TEXTURE_HEIGHT, THREE.RGBAFormat, THREE.FloatType);
     texture.minFilter = THREE.NearestFilter;
     texture.magFilter = THREE.NearestFilter;
     texture.needsUpdate = true;
@@ -148,14 +148,9 @@ function _createPositionTexture() {
 }
 
 function update(dt) {
-
-    if(settings.speed || settings.dieSpeed) {
-        var r = 200;
-        var h = 60;
-        if(settings.isMobile) {
-            r = 100;
-            h = 40;
-        }
+    if (settings.speed || settings.dieSpeed) {
+        var r = settings.isMobile ? 100 : 200;
+        var h = settings.isMobile ? 40 : 60;
 
         var autoClearColor = _renderer.autoClearColor;
         var clearColor = _renderer.getClearColor().getHex();
@@ -172,7 +167,7 @@ function update(dt) {
         _positionShader.uniforms.attraction.value = settings.attraction;
         _positionShader.uniforms.initAnimation.value = exports.initAnimation;
 
-        if(settings.followMouse) {
+        if (settings.followMouse) {
             _positionShader.uniforms.mouse3d.value.copy(settings.mouse3d);
         } else {
             _followPointTime += dt * 0.001 * settings.speed;
@@ -184,16 +179,42 @@ function update(dt) {
             _positionShader.uniforms.mouse3d.value.lerp(_followPoint, 0.2);
         }
 
-        // _renderer.setClearColor(0, 0);
         _updatePosition(dt);
 
         _renderer.setClearColor(clearColor, clearAlpha);
         _renderer.autoClearColor = autoClearColor;
         exports.positionRenderTarget = _positionRenderTarget;
         exports.prevPositionRenderTarget = _positionRenderTarget2;
-
     }
-
 }
 
+function _safeDispose(obj) {
+    try { obj && typeof obj.dispose === 'function' && obj.dispose(); } catch (_) { }
+}
 
+function dispose() {
+    // materials
+    _safeDispose(_copyShader);
+    _safeDispose(_positionShader);
+
+    // textures / render targets
+    _safeDispose(_textureDefaultPosition);
+    _safeDispose(_positionRenderTarget);
+    _safeDispose(_positionRenderTarget2);
+
+    // scene objects
+    if (_mesh) {
+        try { _mesh.geometry && _mesh.geometry.dispose(); } catch (_) { }
+        try { if (_scene) _scene.remove(_mesh); } catch (_) { }
+        _mesh = null;
+    }
+
+    _camera = null;
+    _scene = null;
+    _renderer = null;
+
+    // clear exports
+    exports.positionRenderTarget = undef;
+    exports.prevPositionRenderTarget = undef;
+    exports.initAnimation = 0;
+}

@@ -14,7 +14,7 @@ function runBuild(f) {
     console.log('Bundling', f);
     var b = browserify('src/' + f, {
       debug: false,
-      standalone: 'initThreeExperiment' // <<---- ADD THIS
+      standalone: 'initParticleLove'
     });
     b.transform(require('babelify').configure({ presets: ['@babel/preset-env'] }));
     b.plugin(require('bundle-collapser/plugin'));
@@ -27,7 +27,7 @@ function runBuild(f) {
       console.log('Compressing', f);
       var result = UglifyJS.minify(src.toString(), { fromString: true });
       console.log('Writing', f);
-      fs.writeFile('app/js/' + f, result.code, function (err) {
+      fs.writeFile('dist/particle-love.js', result.code, function (err) {
         if (err) return reject(err);
         resolve();
       });
