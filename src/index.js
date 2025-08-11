@@ -51,7 +51,6 @@ let getMotionBlurMultiplier;
 let getMotionBlurQuality;
 let getBloom;
 let getBloomRadius;
-let getBloomAmount;
 
 let _alreadyRan = false;
 let _existingRenderer = null;
@@ -258,7 +257,7 @@ function _render(dt, newTime) {
 
     settings.bloom = getBloom();
     bloom.blurRadius = getBloomRadius();
-    bloom.amount = getBloomAmount();
+    bloom.amount = set;
 
     _bgColor.setStyle(getBgColor());
     var tmpColor = floor.mesh.material.color;
@@ -306,7 +305,6 @@ module.exports = {
         getMotionBlurQuality = options.getMotionBlurQuality || (() => settings.query.motionBlurQuality);
         getBloom = options.getBloom || (() => settings.bloom);
         getBloomRadius = options.getBloomRadius || (() => bloom.blurRadius);
-        getBloomAmount = options.getBloomAmount || (() => bloom.amount);
 
         if (_alreadyRan && _existingRenderer) {
             return fallbackInit(container);
