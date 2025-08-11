@@ -79,7 +79,12 @@ function init(container) {
     settings.mouse = new THREE.Vector2(0, 0);
     settings.mouse3d = _ray.origin;
 
-    _renderer = new THREE.WebGLRenderer({ antialias: true });
+    // _renderer = new THREE.WebGLRenderer({ antialias: true });
+    _renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        preserveDrawingBuffer: true,
+    });
+
     const gl = _renderer.getContext();
 
     _renderer.setClearColor(getBgColor());
@@ -283,82 +288,87 @@ function _render(dt, newTime) {
     postprocessing.render(dt, newTime);
 }
 
-module.exports = function (container, options = {}) {
-    getBgColor = options.getBgColor || (() => settings.bgColor);
-    getColor1 = options.getColor1 || (() => settings.color1);
-    getColor2 = options.getColor2 || (() => settings.color2);
-    getSpeed = options.getSpeed || (() => settings.speed);
-    getDieSpeed = options.getDieSpeed || (() => settings.dieSpeed);
-    getRadius = options.getRadius || (() => settings.radius);
-    getCurlSize = options.getCurlSize || (() => settings.curlSize);
-    getAttraction = options.getAttraction || (() => settings.attraction);
-    getShadowDarkness = options.getShadowDarkness || (() => settings.shadowDarkness);
-    getFxaa = options.getFxaa || (() => settings.fxaa);
-    getMotionBlur = options.getMotionBlur || (() => settings.motionBlur);
-    getMotionBlurMaxDistance = options.getMotionBlurMaxDistance || (() => motionBlur.maxDistance);
-    getMotionBlurMultiplier = options.getMotionBlurMultiplier || (() => motionBlur.motionMultiplier);
-    getMotionBlurQuality = options.getMotionBlurQuality || (() => settings.query.motionBlurQuality);
-    getBloom = options.getBloom || (() => settings.bloom);
-    getBloomRadius = options.getBloomRadius || (() => bloom.blurRadius);
-    getBloomAmount = options.getBloomAmount || (() => bloom.amount);
+module.exports = {
+    init: function (container, options = {}) {
+        getBgColor = options.getBgColor || (() => settings.bgColor);
+        getColor1 = options.getColor1 || (() => settings.color1);
+        getColor2 = options.getColor2 || (() => settings.color2);
+        getSpeed = options.getSpeed || (() => settings.speed);
+        getDieSpeed = options.getDieSpeed || (() => settings.dieSpeed);
+        getRadius = options.getRadius || (() => settings.radius);
+        getCurlSize = options.getCurlSize || (() => settings.curlSize);
+        getAttraction = options.getAttraction || (() => settings.attraction);
+        getShadowDarkness = options.getShadowDarkness || (() => settings.shadowDarkness);
+        getFxaa = options.getFxaa || (() => settings.fxaa);
+        getMotionBlur = options.getMotionBlur || (() => settings.motionBlur);
+        getMotionBlurMaxDistance = options.getMotionBlurMaxDistance || (() => motionBlur.maxDistance);
+        getMotionBlurMultiplier = options.getMotionBlurMultiplier || (() => motionBlur.motionMultiplier);
+        getMotionBlurQuality = options.getMotionBlurQuality || (() => settings.query.motionBlurQuality);
+        getBloom = options.getBloom || (() => settings.bloom);
+        getBloomRadius = options.getBloomRadius || (() => bloom.blurRadius);
+        getBloomAmount = options.getBloomAmount || (() => bloom.amount);
 
-    if (_alreadyRan && _existingRenderer) {
-        return fallbackInit(container);
-    }
-
-    _alreadyRan = true;
-    init(container);
-
-    _existingRenderer = _renderer;
-    _existingScene = _scene;
-    _existingCamera = _camera;
-
-    function _safeDispose(label, obj) {
-        try {
-            if (obj && typeof obj.dispose === 'function') obj.dispose();
-        } catch (err) { }
-    }
-
-    return function cleanup() {
-        if (_rafId != null) { raf.cancel(_rafId); _rafId = null; }
-
-        window.removeEventListener('resize', _onResize);
-        window.removeEventListener('mousemove', _onMove);
-        if (_touchMoveHandler) {
-            window.removeEventListener('touchmove', _touchMoveHandler);
-            _touchMoveHandler = null;
-        }
-        window.removeEventListener('keyup', _onKeyUp);
-
-        if (_renderer && _renderer.domElement) {
-            if (_onContextLost) _renderer.domElement.removeEventListener('webglcontextlost', _onContextLost, false);
-            if (_onContextRestored) _renderer.domElement.removeEventListener('webglcontextrestored', _onContextRestored, false);
+        if (_alreadyRan && _existingRenderer) {
+            return fallbackInit(container);
         }
 
-        if (_control && typeof _control.dispose === 'function') _control.dispose();
-        _control = null;
+        _alreadyRan = true;
+        init(container);
 
-        _safeDispose('postprocessing', postprocessing);
-        _safeDispose('particles', particles);
-        _safeDispose('simulator', simulator);
-        _safeDispose('lights', lights);
-        _safeDispose('floor', floor);
-        _safeDispose('fboHelper', fboHelper);
+        _existingRenderer = _renderer;
+        _existingScene = _scene;
+        _existingCamera = _camera;
 
-        if (_renderer) {
-            if (typeof _renderer.dispose === 'function') _renderer.dispose();
-            if (_renderer.domElement && _renderer.domElement.parentNode) {
-                _renderer.domElement.parentNode.removeChild(_renderer.domElement);
+        function _safeDispose(label, obj) {
+            try {
+                if (obj && typeof obj.dispose === 'function') obj.dispose();
+            } catch (err) { }
+        }
+
+        return function cleanup() {
+            if (_rafId != null) { raf.cancel(_rafId); _rafId = null; }
+
+            window.removeEventListener('resize', _onResize);
+            window.removeEventListener('mousemove', _onMove);
+            if (_touchMoveHandler) {
+                window.removeEventListener('touchmove', _touchMoveHandler);
+                _touchMoveHandler = null;
             }
-            _renderer = null;
-        }
+            window.removeEventListener('keyup', _onKeyUp);
 
-        if (_stats && _stats.domElement && _stats.domElement.parentNode) {
-            _stats.domElement.parentNode.removeChild(_stats.domElement);
-        }
-        _stats = null;
+            if (_renderer && _renderer.domElement) {
+                if (_onContextLost) _renderer.domElement.removeEventListener('webglcontextlost', _onContextLost, false);
+                if (_onContextRestored) _renderer.domElement.removeEventListener('webglcontextrestored', _onContextRestored, false);
+            }
 
-        _scene = null;
-        _camera = null;
-    };
+            if (_control && typeof _control.dispose === 'function') _control.dispose();
+            _control = null;
+
+            _safeDispose('postprocessing', postprocessing);
+            _safeDispose('particles', particles);
+            _safeDispose('simulator', simulator);
+            _safeDispose('lights', lights);
+            _safeDispose('floor', floor);
+            _safeDispose('fboHelper', fboHelper);
+
+            if (_renderer) {
+                if (typeof _renderer.dispose === 'function') _renderer.dispose();
+                if (_renderer.domElement && _renderer.domElement.parentNode) {
+                    _renderer.domElement.parentNode.removeChild(_renderer.domElement);
+                }
+                _renderer = null;
+            }
+
+            if (_stats && _stats.domElement && _stats.domElement.parentNode) {
+                _stats.domElement.parentNode.removeChild(_stats.domElement);
+            }
+            _stats = null;
+
+            _scene = null;
+            _camera = null;
+        };
+    },
+    takeScreenshot: function () {
+        return _renderer.domElement.toDataURL('image/png');
+    },
 };

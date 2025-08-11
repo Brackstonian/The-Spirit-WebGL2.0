@@ -13,7 +13,7 @@ function runBuild(f) {
   return new Promise(function (resolve, reject) {
     console.log('Bundling', f);
     var b = browserify('src/' + f, {
-      debug: false,
+      debug: true,
       standalone: 'initParticleLove'
     });
     b.transform(require('babelify').configure({ presets: ['@babel/preset-env'] }));
