@@ -30,13 +30,14 @@ var _scene;
 var _renderer;
 var _time = 0;
 var _ray = new THREE.Ray();
-var _initAnimation = 0;
+var _initAnimation = 1000;
 var _bgColor;
 
 var getBgColor;
 var getColors;
 var getSpeed;
 var getDieSpeed;
+var getFollowMouse;
 var getRadius;
 var getCurlSize;
 var getAttraction;
@@ -86,7 +87,7 @@ function init(container) {
     _scene.fog = new THREE.FogExp2(getBgColor(), 0.001);
 
     _camera = new THREE.PerspectiveCamera(45, 1, 10, 3000);
-    _camera.position.set(300, 60, 300).normalize().multiplyScalar(1000);
+    _camera.position.set(300, 60, 300).normalize().multiplyScalar(500);
     settings.camera = _camera;
     settings.cameraPosition = _camera.position;
 
@@ -109,7 +110,7 @@ function init(container) {
 
     _control = new OrbitControls(_camera, _renderer.domElement);
     _control.target.y = 50;
-    _control.maxDistance = 1000;
+    _control.maxDistance = 400;
     _control.minPolarAngle = 0.3;
     _control.maxPolarAngle = Math.PI / 2 - 0.1;
     _control.noPan = true;
@@ -229,6 +230,7 @@ function _render(dt, newTime) {
     settings.speed = getSpeed();
     settings.dieSpeed = getDieSpeed();
     settings.radius = getRadius();
+    settings.followMouse = getFollowMouse();
     settings.curlSize = getCurlSize();
     settings.attraction = getAttraction();
     settings.shadowDarkness = getShadowDarkness();
@@ -286,6 +288,7 @@ module.exports = {
         getSpeed = options.getSpeed || (() => settings.speed);
         getDieSpeed = options.getDieSpeed || (() => settings.dieSpeed);
         getRadius = options.getRadius || (() => settings.radius);
+        getFollowMouse = options.getFollowMouse || (() => settings.followMouse);
         getCurlSize = options.getCurlSize || (() => settings.curlSize);
         getAttraction = options.getAttraction || (() => settings.attraction);
         getShadowDarkness = options.getShadowDarkness || (() => settings.shadowDarkness);

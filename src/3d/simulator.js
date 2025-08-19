@@ -170,14 +170,7 @@ function update(dt) {
         if (settings.followMouse) {
             _positionShader.uniforms.mouse3d.value.copy(settings.mouse3d);
         } else {
-            _followPointTime += dt * 0.001 * settings.speed;
-            _followPoint.set(
-                Math.cos(_followPointTime) * r,
-                Math.cos(_followPointTime * 4.0) * h,
-                Math.sin(_followPointTime * 2.0) * r
-            );
-            _positionShader.uniforms.mouse3d.value.lerp(_followPoint, 0.2);
-        }
+            _positionShader.uniforms.mouse3d.value.set(0, 40, 0);        }
 
         _updatePosition(dt);
 
