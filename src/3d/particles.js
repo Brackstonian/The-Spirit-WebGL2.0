@@ -17,26 +17,22 @@ var _particleMesh;
 var _triangleMesh;
 var _meshes;
 
-var _color1;
-var _color2;
 var _tmpColor;
 
 var TEXTURE_WIDTH = settings.simulatorTextureWidth;
 var TEXTURE_HEIGHT = settings.simulatorTextureHeight;
 var AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
 
-var _getColor1 = function () { return settings.color1 }
-var _getColor2 = function () { return settings.color2 }
+var _getColors = function () {
+    if (Array.isArray(settings.colors) && settings.colors.length >= 2) return settings.colors;
+    return ['#ffffff', '#000000'];
+};
 
-function init(renderer, getColor1, getColor2) {
-    _getColor1 = getColor1 || function () { return settings.color1 }
-    _getColor2 = getColor2 || function () { return settings.color2 }
+function init(renderer, getColors, opts) {
+    _getColors = getColors || _getColors;
 
     container = exports.container = new THREE.Object3D();
-
     _tmpColor = new THREE.Color();
-    _color1 = new THREE.Color(_getColor1());
-    _color2 = new THREE.Color(_getColor2());
 
     _meshes = [
         _triangleMesh = _createTriangleMesh(),
@@ -48,11 +44,52 @@ function init(renderer, getColor1, getColor2) {
     _renderer = renderer;
 }
 
+function _applyPaletteToUniforms(uniforms, cols) {
+    var last = cols[cols.length - 1] || '#000000';
+    var arr = [];
+    for (var i = 0; i < 6; i++) arr[i] = cols[i] || last;
+
+    // push colors
+    ['palette0','palette1','palette2','palette3','palette4','palette5'].forEach(function (key, i) {
+        var u = uniforms[key];
+        if (!u || !u.value) uniforms[key] = { value: new THREE.Color(arr[i]) };
+        else u.value.setStyle(arr[i]);
+    });
+
+    // paletteCount = index of last non-black (min 2)
+    var tmp = _tmpColor || new THREE.Color();
+    var count = 0;
+    for (var j = 0; j < 6; j++) {
+        tmp.setStyle(arr[j]);
+        var isBlack = (tmp.r === 0 && tmp.g === 0 && tmp.b === 0);
+        if (!isBlack) count = j + 1;
+    }
+    if (count < 2) count = 2;
+
+    if (!uniforms.paletteCount) uniforms.paletteCount = { value: count };
+    else uniforms.paletteCount.value = count;
+
+    // ensure lifeCurveExp exists (1.0 = equal span)
+    if (!uniforms.lifeCurveExp) uniforms.lifeCurveExp = { value: 1.0 };
+}
+
+function _refreshPaletteUniforms(baseMaterial) {
+    var cols = _getColors();
+    if (!Array.isArray(cols)) cols = ['#ffffff', '#000000'];
+    if (cols.length < 2) cols = ['#ffffff', '#000000'];
+    if (cols.length > 6) cols = cols.slice(0, 6);
+
+    var mats = [baseMaterial, baseMaterial && baseMaterial.customDistanceMaterial, baseMaterial && baseMaterial.motionMaterial];
+    mats.forEach(function (m) {
+        if (!m || !m.uniforms) return;
+        _applyPaletteToUniforms(m.uniforms, cols);
+    });
+}
+
 function _createParticleMesh() {
     var position = new Float32Array(AMOUNT * 3);
-    var i3;
     for (var i = 0; i < AMOUNT; i++) {
-        i3 = i * 3;
+        var i3 = i * 3;
         position[i3 + 0] = (i % TEXTURE_WIDTH) / TEXTURE_WIDTH;
         position[i3 + 1] = ~~(i / TEXTURE_WIDTH) / TEXTURE_HEIGHT;
     }
@@ -64,8 +101,14 @@ function _createParticleMesh() {
             THREE.UniformsLib.shadowmap,
             {
                 texturePosition: { type: 't', value: undef },
-                color1: { type: 'c', value: undef },
-                color2: { type: 'c', value: undef }
+                palette0: { type: 'c', value: new THREE.Color(0x000000) },
+                palette1: { type: 'c', value: new THREE.Color(0x000000) },
+                palette2: { type: 'c', value: new THREE.Color(0x000000) },
+                palette3: { type: 'c', value: new THREE.Color(0x000000) },
+                palette4: { type: 'c', value: new THREE.Color(0x000000) },
+                palette5: { type: 'c', value: new THREE.Color(0x000000) },
+                paletteCount: { type: 'f', value: 2.0 },
+                lifeCurveExp: { type: 'f', value: 1.0 }
             }
         ]),
         vertexShader: shaderParse(glslify('../glsl/particles.vert')),
@@ -73,15 +116,22 @@ function _createParticleMesh() {
         blending: THREE.NoBlending
     });
 
-    material.uniforms.color1.value = _color1;
-    material.uniforms.color2.value = _color2;
+    _refreshPaletteUniforms(material);
 
     var mesh = new THREE.Points(geometry, material);
 
     mesh.customDistanceMaterial = new THREE.ShaderMaterial({
         uniforms: {
-            lightPos: { type: 'v3', value: new THREE.Vector3(0, 0, 0) },
-            texturePosition: { type: 't', value: undef }
+            lightPos:        { type: 'v3', value: new THREE.Vector3(0, 0, 0) },
+            texturePosition: { type: 't',  value: undef },
+            palette0: { type: 'c', value: new THREE.Color(0x000000) },
+            palette1: { type: 'c', value: new THREE.Color(0x000000) },
+            palette2: { type: 'c', value: new THREE.Color(0x000000) },
+            palette3: { type: 'c', value: new THREE.Color(0x000000) },
+            palette4: { type: 'c', value: new THREE.Color(0x000000) },
+            palette5: { type: 'c', value: new THREE.Color(0x000000) },
+            paletteCount: { type: 'f', value: 2.0 },
+            lifeCurveExp: { type: 'f', value: 1.0 }
         },
         vertexShader: shaderParse(glslify('../glsl/particlesDistance.vert')),
         fragmentShader: shaderParse(glslify('../glsl/particlesDistance.frag')),
@@ -93,8 +143,16 @@ function _createParticleMesh() {
 
     mesh.motionMaterial = new MeshMotionMaterial({
         uniforms: {
-            texturePosition: { type: 't', value: undef },
-            texturePrevPosition: { type: 't', value: undef }
+            texturePosition:     { type: 't', value: undef },
+            texturePrevPosition: { type: 't', value: undef },
+            palette0: { type: 'c', value: new THREE.Color(0x000000) },
+            palette1: { type: 'c', value: new THREE.Color(0x000000) },
+            palette2: { type: 'c', value: new THREE.Color(0x000000) },
+            palette3: { type: 'c', value: new THREE.Color(0x000000) },
+            palette4: { type: 'c', value: new THREE.Color(0x000000) },
+            palette5: { type: 'c', value: new THREE.Color(0x000000) },
+            paletteCount: { type: 'f', value: 2.0 },
+            lifeCurveExp: { type: 'f', value: 1.0 }
         },
         vertexShader: shaderParse(glslify('../glsl/particlesMotion.vert')),
         depthTest: true,
@@ -107,6 +165,7 @@ function _createParticleMesh() {
     mesh.receiveShadow = true;
     container.add(mesh);
 
+    material.needsUpdate = true;
     return mesh;
 }
 
@@ -161,8 +220,14 @@ function _createTriangleMesh() {
             {
                 texturePosition: { type: 't', value: undef },
                 flipRatio: { type: 'f', value: 0 },
-                color1: { type: 'c', value: undef },
-                color2: { type: 'c', value: undef },
+                palette0: { type: 'c', value: new THREE.Color(0x000000) },
+                palette1: { type: 'c', value: new THREE.Color(0x000000) },
+                palette2: { type: 'c', value: new THREE.Color(0x000000) },
+                palette3: { type: 'c', value: new THREE.Color(0x000000) },
+                palette4: { type: 'c', value: new THREE.Color(0x000000) },
+                palette5: { type: 'c', value: new THREE.Color(0x000000) },
+                paletteCount: { type: 'f', value: 2.0 },
+                lifeCurveExp: { type: 'f', value: 1.0 },
                 cameraMatrix: { type: 'm4', value: undef }
             }
         ]),
@@ -171,17 +236,24 @@ function _createTriangleMesh() {
         blending: THREE.NoBlending
     });
 
-    material.uniforms.color1.value = _color1;
-    material.uniforms.color2.value = _color2;
+    _refreshPaletteUniforms(material);
     material.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
 
     var mesh = new THREE.Mesh(geometry, material);
 
     mesh.customDistanceMaterial = new THREE.ShaderMaterial({
         uniforms: {
-            lightPos: { type: 'v3', value: new THREE.Vector3(0, 0, 0) },
-            texturePosition: { type: 't', value: undef },
-            flipRatio: { type: 'f', value: 0 }
+            lightPos:        { type: 'v3', value: new THREE.Vector3(0, 0, 0) },
+            texturePosition: { type: 't',  value: undef },
+            flipRatio:       { type: 'f',  value: 0 },
+            palette0: { type: 'c', value: new THREE.Color(0x000000) },
+            palette1: { type: 'c', value: new THREE.Color(0x000000) },
+            palette2: { type: 'c', value: new THREE.Color(0x000000) },
+            palette3: { type: 'c', value: new THREE.Color(0x000000) },
+            palette4: { type: 'c', value: new THREE.Color(0x000000) },
+            palette5: { type: 'c', value: new THREE.Color(0x000000) },
+            paletteCount: { type: 'f', value: 2.0 },
+            lifeCurveExp: { type: 'f', value: 1.0 }
         },
         vertexShader: shaderParse(glslify('../glsl/trianglesDistance.vert')),
         fragmentShader: shaderParse(glslify('../glsl/particlesDistance.frag')),
@@ -193,9 +265,17 @@ function _createTriangleMesh() {
 
     mesh.motionMaterial = new MeshMotionMaterial({
         uniforms: {
-            texturePosition: { type: 't', value: undef },
+            texturePosition:     { type: 't', value: undef },
             texturePrevPosition: { type: 't', value: undef },
-            flipRatio: { type: 'f', value: 0 }
+            flipRatio:           { type: 'f', value: 0 },
+            palette0: { type: 'c', value: new THREE.Color(0x000000) },
+            palette1: { type: 'c', value: new THREE.Color(0x000000) },
+            palette2: { type: 'c', value: new THREE.Color(0x000000) },
+            palette3: { type: 'c', value: new THREE.Color(0x000000) },
+            palette4: { type: 'c', value: new THREE.Color(0x000000) },
+            palette5: { type: 'c', value: new THREE.Color(0x000000) },
+            paletteCount: { type: 'f', value: 2.0 },
+            lifeCurveExp: { type: 'f', value: 1.0 }
         },
         vertexShader: shaderParse(glslify('../glsl/trianglesMotion.vert')),
         depthTest: true,
@@ -208,11 +288,11 @@ function _createTriangleMesh() {
     mesh.receiveShadow = true;
     container.add(mesh);
 
+    material.needsUpdate = true;
     return mesh;
 }
 
 function update(dt) {
-
     if (!simulator.positionRenderTarget || !simulator.prevPositionRenderTarget) {
         if (!update._warnedOnce) {
             console.warn('[particles] sim targets not ready yet');
@@ -221,22 +301,19 @@ function update(dt) {
         return;
     }
 
-    if (update._dbgCount === undefined) update._dbgCount = 0;
-
     var mesh;
-
     _triangleMesh.visible = settings.useTriangleParticles;
     _particleMesh.visible = !settings.useTriangleParticles;
-
-    _color1.setStyle(_getColor1());
-    _color2.setStyle(_getColor2());
 
     for (var i = 0; i < 2; i++) {
         mesh = _meshes[i];
         mesh.material.uniforms.texturePosition.value = simulator.positionRenderTarget;
         mesh.customDistanceMaterial.uniforms.texturePosition.value = simulator.positionRenderTarget;
         mesh.motionMaterial.uniforms.texturePrevPosition.value = simulator.prevPositionRenderTarget;
-        if (mesh.material.uniforms.flipRatio) {
+
+        _refreshPaletteUniforms(mesh.material);
+
+        if (mesh.material.uniforms.flipRatio !== undefined) {
             mesh.material.uniforms.flipRatio.value ^= 1;
             mesh.customDistanceMaterial.uniforms.flipRatio.value ^= 1;
             mesh.motionMaterial.uniforms.flipRatio.value ^= 1;
@@ -247,7 +324,6 @@ function update(dt) {
 function _disposeMaterial(mat) {
     if (!mat) return;
     try {
-        // dispose textures in uniforms if present
         if (mat.uniforms) {
             Object.keys(mat.uniforms).forEach(function (k) {
                 var v = mat.uniforms[k] && mat.uniforms[k].value;
@@ -263,7 +339,6 @@ function _disposeMaterial(mat) {
 function dispose() {
     if (!container) return;
 
-    // remove and dispose meshes
     [_particleMesh, _triangleMesh].forEach(function (m) {
         if (!m) return;
         try { container.remove(m); } catch (_) { }
@@ -273,7 +348,6 @@ function dispose() {
         _disposeMaterial(m.motionMaterial);
     });
 
-    // finally drop container
     try {
         if (container.parent) container.parent.remove(container);
     } catch (_) { }
@@ -283,7 +357,5 @@ function dispose() {
     _particleMesh = null;
     _triangleMesh = null;
     _meshes = null;
-    _color1 = null;
-    _color2 = null;
     _tmpColor = null;
 }

@@ -14,11 +14,11 @@ exports.init = init;
 exports.render = render;
 
 exports.blurRadius = 1.3;
-exports.amount = 0.3;
+exports.amount = 0.5;
 
 var _blurMaterial;
 
-var BLUR_BIT_SHIFT = 1;
+var BLUR_BIT_SHIFT = 0.1;
 
 function init() {
 

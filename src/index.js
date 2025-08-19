@@ -1,5 +1,3 @@
-
-
 var dat = require('dat-gui');
 var Stats = require('stats.js');
 var css = require('dom-css');
@@ -36,8 +34,7 @@ var _initAnimation = 0;
 var _bgColor;
 
 var getBgColor;
-var getColor1;
-var getColor2;
+var getColors;
 var getSpeed;
 var getDieSpeed;
 var getRadius;
@@ -63,10 +60,7 @@ let _onContextLost = null;
 let _onContextRestored = null;
 
 function init(container) {
-
-    if (!container) {
-        return;
-    }
+    if (!container) return;
 
     if (settings.useStats) {
         _stats = new Stats();
@@ -78,13 +72,10 @@ function init(container) {
     settings.mouse = new THREE.Vector2(0, 0);
     settings.mouse3d = _ray.origin;
 
-    // _renderer = new THREE.WebGLRenderer({ antialias: true });
     _renderer = new THREE.WebGLRenderer({
         antialias: true,
         preserveDrawingBuffer: true,
     });
-
-    const gl = _renderer.getContext();
 
     _renderer.setClearColor(getBgColor());
     _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -103,7 +94,7 @@ function init(container) {
     postprocessing.init(_renderer, _scene, _camera);
 
     simulator.init(_renderer);
-    particles.init(_renderer, getColor1, getColor2);
+    particles.init(_renderer, getColors);
     _scene.add(particles.container);
 
     simulator.update(0);
@@ -150,7 +141,7 @@ function fallbackInit(container) {
     container.appendChild(_renderer.domElement);
 
     simulator.init(_renderer, { resume: true });
-    particles.init(_renderer, getColor1, getColor2, { resume: true });
+    particles.init(_renderer, getColors, { resume: true });
     _scene.add(particles.container);
 
     lights.init(_renderer);
@@ -183,9 +174,7 @@ function fallbackInit(container) {
         }
         window.removeEventListener('keyup', _onKeyUp);
 
-        if (_control && typeof _control.dispose === 'function') {
-            _control.dispose();
-        }
+        if (_control && typeof _control.dispose === 'function') _control.dispose();
         _control = null;
 
         try { _scene.remove(particles.container); } catch (_) { }
@@ -257,7 +246,6 @@ function _render(dt, newTime) {
 
     settings.bloom = getBloom();
     bloom.blurRadius = getBloomRadius();
-    bloom.amount = set;
 
     _bgColor.setStyle(getBgColor());
     var tmpColor = floor.mesh.material.color;
@@ -289,9 +277,12 @@ function _render(dt, newTime) {
 
 module.exports = {
     init: function (container, options = {}) {
+        console.log('[particles] USING PALETTE-ONLY BUILD');
         getBgColor = options.getBgColor || (() => settings.bgColor);
-        getColor1 = options.getColor1 || (() => settings.color1);
-        getColor2 = options.getColor2 || (() => settings.color2);
+        getColors = options.getColors || (() => {
+            if (Array.isArray(settings.colors) && settings.colors.length >= 2) return settings.colors;
+            return ['#ffffff', '#000000'];
+        });
         getSpeed = options.getSpeed || (() => settings.speed);
         getDieSpeed = options.getDieSpeed || (() => settings.dieSpeed);
         getRadius = options.getRadius || (() => settings.radius);

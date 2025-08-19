@@ -20,13 +20,13 @@ var amountMap = {
 };
 
 exports.amountList = keys(amountMap);
-query.amount = amountMap[query.amount] ? query.amount : '65k';
+query.amount = amountMap[query.amount] ? query.amount : '131k';
 var amountInfo = amountMap[query.amount];
 exports.simulatorTextureWidth = amountInfo[0];
 exports.simulatorTextureHeight = amountInfo[1];
 
 exports.useTriangleParticles = true;
-exports.followMouse = false;
+exports.followMouse = true;
 
 exports.speed = 1;
 exports.dieSpeed = 0.015;
@@ -47,7 +47,7 @@ var motionBlurQualityMap = exports.motionBlurQualityMap = {
     low: 0.25
 };
 exports.motionBlurQualityList = keys(motionBlurQualityMap);
-query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'high';
+query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'medium';
 exports.motionBlur = true;
 exports.motionBlurPause = false;
-exports.bloom = true;
+exports.bloom = false;
