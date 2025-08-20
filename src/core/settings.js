@@ -33,7 +33,7 @@ exports.dieSpeed = 0.015;
 exports.radius = amountInfo[2];
 exports.curlSize = 0.02;
 exports.attraction = 1;
-exports.shadowDarkness = 0.45;
+exports.shadowDarkness = 0.60;
 
 exports.bgColor = '#000';
 exports.color1 = '#ffffff';
@@ -47,7 +47,7 @@ var motionBlurQualityMap = exports.motionBlurQualityMap = {
     low: 0.25
 };
 exports.motionBlurQualityList = keys(motionBlurQualityMap);
-query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'best';
+query.motionBlurQuality = motionBlurQualityMap[query.motionBlurQuality] ? query.motionBlurQuality : 'high';
 exports.motionBlur = true;
 exports.motionBlurPause = true;
 exports.bloom = true;

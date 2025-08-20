@@ -361,6 +361,13 @@ module.exports = {
         };
     },
     takeScreenshot: function () {
+        // Force a fresh frame with post effects applied
+        postprocessing.render(0, performance.now());
+
+        // Flush GL (helps on some drivers)
+        const gl = _renderer.getContext();
+        if (gl.finish) gl.finish();
+
         return _renderer.domElement.toDataURL('image/png');
-    },
+    }
 };

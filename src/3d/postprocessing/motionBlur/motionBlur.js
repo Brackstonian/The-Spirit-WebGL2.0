@@ -20,8 +20,8 @@ exports.useSampling = false;
 exports.skipMatrixUpdate = false;
 
 exports.fadeStrength = 1;
-exports.motionMultiplier = 1;
-exports.maxDistance = 100;
+exports.motionMultiplier = 15;
+exports.maxDistance = 300;
 exports.targetFPS = 60;
 exports.leaning = 0.5;
 
