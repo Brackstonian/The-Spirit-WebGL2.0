@@ -56,29 +56,77 @@ var _visibleCache = [];
 var _width;
 var _height;
 
+var _texType = THREE.FloatType;
+var _canLinear = true;
+
+function _chooseCaps(gl) {
+    var hasFloat       = !!gl.getExtension('OES_texture_float');
+    var hasFloatLinear = !!gl.getExtension('OES_texture_float_linear');
+    var hasHalf        = !!gl.getExtension('OES_texture_half_float');
+    var hasHalfLinear  = !!gl.getExtension('OES_texture_half_float_linear');
+
+    // Prefer float+linear, else half+linear, else float/half+nearest, else RGBA8
+    if (hasFloat && hasFloatLinear) {
+        return { type: THREE.FloatType, canLinear: true };
+    }
+    if (hasHalf && hasHalfLinear) {
+        return { type: THREE.HalfFloatType, canLinear: true };
+    }
+    if (hasFloat) {
+        return { type: THREE.FloatType, canLinear: false };
+    }
+    if (hasHalf) {
+        return { type: THREE.HalfFloatType, canLinear: false };
+    }
+    return { type: THREE.UnsignedByteType, canLinear: true }; // linear always ok on 8-bit
+}
+
+function _applyFilters(rt, canLinear) {
+    var filter = canLinear ? THREE.LinearFilter : THREE.NearestFilter;
+    rt.texture.minFilter = filter;
+    rt.texture.magFilter = filter;
+}
+
+function _setManualLinear(material, enabled) {
+    material.defines = material.defines || {};
+    if (enabled) {
+        material.defines.MANUAL_LINEAR = 1;
+    } else {
+        delete material.defines.MANUAL_LINEAR;
+    }
+    material.needsUpdate = true;
+}
+
 function init(sampleCount) {
 
     var gl = effectComposer.renderer.getContext();
-    if(!gl.getExtension('OES_texture_float') || !gl.getExtension('OES_texture_float_linear')) {
-        alert('no float linear support');
-    }
 
-    _motionRenderTarget = fboHelper.createRenderTarget(1, 1, THREE.RGBAFormat, THREE.FloatType);
+    // Capability negotiation (no alert, just fallbacks)
+    var caps = _chooseCaps(gl);
+    _texType = caps.type;
+    _canLinear = caps.canLinear;
+
+    _motionRenderTarget = fboHelper.createRenderTarget(1, 1, THREE.RGBAFormat, _texType);
     _motionRenderTarget.depthBuffer = true;
+    _applyFilters(_motionRenderTarget, _canLinear);
 
-    _linesRenderTarget = fboHelper.createRenderTarget(1, 1, THREE.RGBAFormat, THREE.FloatType);
+    _linesRenderTarget = fboHelper.createRenderTarget(1, 1, THREE.RGBAFormat, _texType);
+    _applyFilters(_linesRenderTarget, _canLinear);
+
     _linesCamera = new THREE.Camera();
     _linesCamera.position.z = 1.0;
     _linesScene = new THREE.Scene();
 
+    // --- Final combine (uses u_linesTexture) ---
     _super.init.call(this, {
         uniforms: {
             u_lineAlphaMultiplier: { type: 'f', value: 1 },
-            u_linesTexture: { type: 't', value: _linesRenderTarget }
-            // u_motionTexture: { type: 't', value: _motionRenderTarget }
+            u_linesTexture: { type: 't', value: _linesRenderTarget },
+            u_linesTexSize: { type: 'v2', value: new THREE.Vector2(1,1) } // set in resize
         },
         fragmentShader: glslify('./motionBlur.frag')
     });
+    _setManualLinear(this.material, !_canLinear);
 
     _linesPositions = [];
     _linesGeometry = new THREE.BufferGeometry();
@@ -87,6 +135,7 @@ function init(sampleCount) {
             u_texture: { type: 't', value: undef },
             u_motionTexture: { type: 't', value: _motionRenderTarget },
             u_resolution: { type: 'v2', value: effectComposer.resolution },
+            u_motionTexSize: { type: 'v2', value: new THREE.Vector2(1,1) }, // set in resize
             u_maxDistance: { type: 'f', value: 1 },
             u_jitter: { type: 'f', value: 0.3 },
             u_fadeStrength: { type: 'f', value: 1 },
@@ -110,6 +159,8 @@ function init(sampleCount) {
         depthWrite: false,
         transparent: true
     });
+    _setManualLinear(_linesMaterial, !_canLinear);
+
     _lines = new THREE.LineSegments(_linesGeometry, _linesMaterial);
     _linesScene.add(_lines);
 
@@ -118,6 +169,7 @@ function init(sampleCount) {
             u_texture: { type: 't', value: undef },
             u_motionTexture: { type: 't', value: _motionRenderTarget },
             u_resolution: { type: 'v2', value: effectComposer.resolution },
+            u_motionTexSize: { type: 'v2', value: new THREE.Vector2(1,1) }, // set in resize
             u_maxDistance: { type: 'f', value: 1 },
             u_fadeStrength: { type: 'f', value: 1 },
             u_motionMultiplier: { type: 'f', value: 1 },
@@ -129,6 +181,7 @@ function init(sampleCount) {
         vertexShader: this.material.vertexShader,
         fragmentShader: fboHelper.rawShaderPrefix + '#define SAMPLE_COUNT ' + (sampleCount || 21) + '\n' + glslify('./motionBlurSampling.frag')
     });
+    _setManualLinear(_samplingMaterial, !_canLinear);
 }
 
 function resize(width, height) {
@@ -145,10 +198,27 @@ function resize(width, height) {
     var motionHeight = ~~(height * exports.motionRenderTargetScale);
     _motionRenderTarget.setSize(motionWidth , motionHeight);
 
+    // Update motion RT filter (in case caps changed or scale toggled)
+    _applyFilters(_motionRenderTarget, _canLinear);
+
+    // Propagate motion tex size for manual bilinear
+    if (_linesMaterial && _linesMaterial.uniforms.u_motionTexSize) {
+        _linesMaterial.uniforms.u_motionTexSize.value.set(motionWidth, motionHeight);
+    }
+    if (_samplingMaterial && _samplingMaterial.uniforms.u_motionTexSize) {
+        _samplingMaterial.uniforms.u_motionTexSize.value.set(motionWidth, motionHeight);
+    }
+
     if(!exports.useSampling) {
         var linesWidth = ~~(width * exports.linesRenderTargetScale);
         var linesHeight = ~~(height * exports.linesRenderTargetScale);
         _linesRenderTarget.setSize(linesWidth, linesHeight);
+        _applyFilters(_linesRenderTarget, _canLinear);
+
+        // Pass lines RT size to final pass (for manual bilinear on u_linesTexture)
+        if (this.material && this.material.uniforms && this.material.uniforms.u_linesTexSize) {
+            this.material.uniforms.u_linesTexSize.value.set(linesWidth, linesHeight);
+        }
 
         var i;
         var noDithering = !exports.useDithering;

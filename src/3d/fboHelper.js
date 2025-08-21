@@ -74,7 +74,7 @@ function createRenderTarget(width, height, format, type, minFilter, magFilter) {
         // stencilBuffer: false
     });
 
-    renderTarget.texture.generateMipMaps = false;
+    renderTarget.texture.generateMipmaps = false;
 
     return renderTarget;
 }

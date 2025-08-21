@@ -13,7 +13,7 @@ function init() {
     var planeMaterial = new THREE.MeshStandardMaterial({
         roughness: 0.7,
         metalness: 1.0,
-        color: 0x333333,
+        color: 0x000000,
         emissive: 0x000000
     });
     var floor = exports.mesh = new THREE.Mesh(geometry, planeMaterial);

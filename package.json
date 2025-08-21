@@ -1,6 +1,6 @@
 {
   "name": "to-particle-love",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "",
   "main": "dist/particle-love.js",
   "files": [
