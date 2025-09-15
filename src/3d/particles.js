@@ -19,9 +19,19 @@ var _meshes;
 
 var _tmpColor;
 
+// sim dims
 var TEXTURE_WIDTH = settings.simulatorTextureWidth;
 var TEXTURE_HEIGHT = settings.simulatorTextureHeight;
 var AMOUNT = TEXTURE_WIDTH * TEXTURE_HEIGHT;
+
+/* ========= Palette LERP state (time-based) ========= */
+var _palettePrev = null;       // [THREE.Color x6]  current displayed start
+var _paletteNext = null;       // [THREE.Color x6]  target to lerp to
+var _paletteCountTarget = 2;   // target paletteCount for current _paletteNext
+var _lerpStart = 0;            // performance.now() at start
+var _lerpEnd = 0;              // performance.now() at end
+var _lastTargetKey = '';       // joined string of hex6 to detect change
+/* =================================================== */
 
 var _getColors = function () {
     if (Array.isArray(settings.colors) && settings.colors.length >= 2) return settings.colors;
@@ -32,6 +42,7 @@ function init(renderer, getColors, opts) {
     _getColors = getColors || _getColors;
 
     container = exports.container = new THREE.Object3D();
+
     _tmpColor = new THREE.Color();
 
     _meshes = [
@@ -42,50 +53,147 @@ function init(renderer, getColors, opts) {
     _particleMesh.visible = false;
 
     _renderer = renderer;
+
+    // initial palette -> set immediately
+    var hex6 = _normHexArray(_getColors());
+    _setImmediatePalette(hex6);
 }
 
-function _applyPaletteToUniforms(uniforms, cols) {
+function _now() {
+    if (typeof performance !== 'undefined' && performance.now) return performance.now();
+    return Date.now();
+}
+
+function _smoothstep(t) {
+    // cubic smoothstep 0..1
+    t = Math.max(0, Math.min(1, t));
+    return t * t * (3 - 2 * t);
+}
+
+function _normHexArray(cols) {
+    if (!Array.isArray(cols) || cols.length < 2) cols = ['#ffffff', '#000000'];
     var last = cols[cols.length - 1] || '#000000';
     var arr = [];
     for (var i = 0; i < 6; i++) arr[i] = cols[i] || last;
+    return arr.slice(0, 6);
+}
 
-    // push colors
-    ['palette0','palette1','palette2','palette3','palette4','palette5'].forEach(function (key, i) {
-        var u = uniforms[key];
-        if (!u || !u.value) uniforms[key] = { value: new THREE.Color(arr[i]) };
-        else u.value.setStyle(arr[i]);
-    });
+function _hexToColorArray(hex6) {
+    return hex6.map(function (h) { return new THREE.Color(h); });
+}
 
-    // paletteCount = index of last non-black (min 2)
+function _colorArrayClone(arr) {
+    return arr.map(function (c) { return c.clone(); });
+}
+
+function _paletteCountForHex(hex6) {
     var tmp = _tmpColor || new THREE.Color();
     var count = 0;
     for (var j = 0; j < 6; j++) {
-        tmp.setStyle(arr[j]);
+        tmp.setStyle(hex6[j]);
         var isBlack = (tmp.r === 0 && tmp.g === 0 && tmp.b === 0);
         if (!isBlack) count = j + 1;
     }
-    if (count < 2) count = 2;
-
-    if (!uniforms.paletteCount) uniforms.paletteCount = { value: count };
-    else uniforms.paletteCount.value = count;
-
-    // ensure lifeCurveExp exists (1.0 = equal span)
-    if (!uniforms.lifeCurveExp) uniforms.lifeCurveExp = { value: 1.0 };
+    return Math.max(2, count);
 }
 
-function _refreshPaletteUniforms(baseMaterial) {
-    var cols = _getColors();
-    if (!Array.isArray(cols)) cols = ['#ffffff', '#000000'];
-    if (cols.length < 2) cols = ['#ffffff', '#000000'];
-    if (cols.length > 6) cols = cols.slice(0, 6);
-
-    var mats = [baseMaterial, baseMaterial && baseMaterial.customDistanceMaterial, baseMaterial && baseMaterial.motionMaterial];
-    mats.forEach(function (m) {
-        if (!m || !m.uniforms) return;
-        _applyPaletteToUniforms(m.uniforms, cols);
-    });
+function _readCurrentUniformColors() {
+    // read from particle material if available, fallback to triangle
+    var m = _particleMesh && _particleMesh.material;
+    if (!m || !m.uniforms) m = _triangleMesh && _triangleMesh.material;
+    var out = [];
+    if (m && m.uniforms && m.uniforms.palette0) {
+        for (var i = 0; i < 6; i++) {
+            var u = m.uniforms['palette' + i];
+            out[i] = (u && u.value) ? u.value.clone() : new THREE.Color(0,0,0);
+        }
+    } else {
+        // fallback: use target colors
+        out = _hexToColorArray(_normHexArray(_getColors()));
+    }
+    return out;
 }
 
+function _setImmediatePalette(hex6) {
+    var colors = _hexToColorArray(hex6);
+    _palettePrev = _colorArrayClone(colors);
+    _paletteNext = _colorArrayClone(colors);
+    _paletteCountTarget = _paletteCountForHex(hex6);
+    _lerpStart = _lerpEnd = _now();
+    _writeUniforms(colors, _paletteCountTarget);
+}
+
+function _beginLerpTo(hex6) {
+    var target = _hexToColorArray(hex6);
+    var currentDisplayed = _readCurrentUniformColors(); // start from what's on-screen now
+    _palettePrev = currentDisplayed;
+    _paletteNext = target;
+    _paletteCountTarget = _paletteCountForHex(hex6);
+
+    var dur = typeof settings.paletteLerpSeconds === 'number' ? settings.paletteLerpSeconds : 0.6;
+    dur = Math.max(0, dur);
+    var t0 = _now();
+    _lerpStart = t0;
+    _lerpEnd = t0 + dur * 1000.0;
+
+    // if duration == 0 → snap
+    if (dur === 0) {
+        _writeUniforms(_paletteNext, _paletteCountTarget);
+        _lerpStart = _lerpEnd = _now();
+    }
+}
+
+function _maybeStartNewLerpFromSettings() {
+    var targetHex = _normHexArray(_getColors());
+    var key = targetHex.join('|');
+    if (key !== _lastTargetKey) {
+        _lastTargetKey = key;
+        if (!_palettePrev || !_paletteNext) {
+            _setImmediatePalette(targetHex);
+        } else {
+            _beginLerpTo(targetHex);
+        }
+    }
+}
+
+function _lerpedColorsAtNow() {
+    if (!_palettePrev || !_paletteNext) return _hexToColorArray(_normHexArray(_getColors()));
+    var t;
+    if (_lerpEnd <= _lerpStart) t = 1.0;
+    else t = Math.max(0, Math.min(1, (_now() - _lerpStart) / (_lerpEnd - _lerpStart)));
+    var e = _smoothstep(t);
+    var out = new Array(6);
+    for (var i = 0; i < 6; i++) {
+        // out[i] = prev + e*(next-prev)
+        out[i] = _palettePrev[i].clone().lerp(_paletteNext[i], e);
+    }
+    return out;
+}
+
+function _writeUniforms(colors /* THREE.Color[6] */, paletteCount) {
+    var mats = [];
+    if (_particleMesh) mats.push(_particleMesh.material, _particleMesh.customDistanceMaterial, _particleMesh.motionMaterial);
+    if (_triangleMesh) mats.push(_triangleMesh.material, _triangleMesh.customDistanceMaterial, _triangleMesh.motionMaterial);
+
+    for (var m = 0; m < mats.length; m++) {
+        var mat = mats[m];
+        if (!mat || !mat.uniforms) continue;
+        for (var i = 0; i < 6; i++) {
+            var key = 'palette' + i;
+            var u = mat.uniforms[key];
+            if (!u || !u.value) mat.uniforms[key] = { value: colors[i].clone() };
+            else u.value.copy(colors[i]);
+        }
+        if (!mat.uniforms.paletteCount) mat.uniforms.paletteCount = { value: paletteCount };
+        else mat.uniforms.paletteCount.value = paletteCount;
+
+        if (!mat.uniforms.lifeCurveExp) mat.uniforms.lifeCurveExp = { value: 1.0 };
+
+        // IMPORTANT: do NOT set mat.needsUpdate here. Uniform changes don’t require recompile.
+    }
+}
+
+/* ---------- mesh creation (unchanged shaders) ---------- */
 function _createParticleMesh() {
     var position = new Float32Array(AMOUNT * 3);
     for (var i = 0; i < AMOUNT; i++) {
@@ -116,7 +224,10 @@ function _createParticleMesh() {
         blending: THREE.NoBlending
     });
 
-    _refreshPaletteUniforms(material);
+    // initialize uniforms from current settings immediately
+    var hex6 = _normHexArray(_getColors());
+    _setImmediatePalette(hex6);
+    _writeUniforms(_paletteNext, _paletteCountTarget);
 
     var mesh = new THREE.Points(geometry, material);
 
@@ -236,7 +347,10 @@ function _createTriangleMesh() {
         blending: THREE.NoBlending
     });
 
-    _refreshPaletteUniforms(material);
+    // init uniforms
+    var hex6 = _normHexArray(_getColors());
+    _setImmediatePalette(hex6);
+    _writeUniforms(_paletteNext, _paletteCountTarget);
     material.uniforms.cameraMatrix.value = settings.camera.matrixWorld;
 
     var mesh = new THREE.Mesh(geometry, material);
@@ -292,6 +406,7 @@ function _createTriangleMesh() {
     return mesh;
 }
 
+/* ================== MAIN UPDATE ================== */
 function update(dt) {
     if (!simulator.positionRenderTarget || !simulator.prevPositionRenderTarget) {
         if (!update._warnedOnce) {
@@ -301,6 +416,14 @@ function update(dt) {
         return;
     }
 
+    // detect target change & start new lerp if needed
+    _maybeStartNewLerpFromSettings();
+
+    // compute current lerped colors and write to uniforms
+    var colorsNow = _lerpedColorsAtNow();
+    _writeUniforms(colorsNow, _paletteCountTarget);
+
+    // mesh vis + sim textures + flip
     var mesh;
     _triangleMesh.visible = settings.useTriangleParticles;
     _particleMesh.visible = !settings.useTriangleParticles;
@@ -311,8 +434,6 @@ function update(dt) {
         mesh.customDistanceMaterial.uniforms.texturePosition.value = simulator.positionRenderTarget;
         mesh.motionMaterial.uniforms.texturePrevPosition.value = simulator.prevPositionRenderTarget;
 
-        _refreshPaletteUniforms(mesh.material);
-
         if (mesh.material.uniforms.flipRatio !== undefined) {
             mesh.material.uniforms.flipRatio.value ^= 1;
             mesh.customDistanceMaterial.uniforms.flipRatio.value ^= 1;
@@ -320,6 +441,7 @@ function update(dt) {
         }
     }
 }
+/* ================================================ */
 
 function _disposeMaterial(mat) {
     if (!mat) return;
@@ -358,4 +480,8 @@ function dispose() {
     _triangleMesh = null;
     _meshes = null;
     _tmpColor = null;
+
+    _palettePrev = _paletteNext = null;
+    _lastTargetKey = '';
+    _lerpStart = _lerpEnd = 0;
 }
